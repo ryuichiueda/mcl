@@ -1,6 +1,13 @@
+/*
+ *  Copyright (c) 2021, Ryuichi Ueda
+ *  All rights reserved.
+ *
+ */
+
 #include <ros/ros.h>
 #include "nav_msgs/GetMap.h"
 #include "nav_msgs/OccupancyGrid.h"
+#include "Pf.h"
 /*
 #include <iostream>
 #include <vector>
@@ -25,6 +32,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	Pf pf();
 	/*
 	XmlRpc::XmlRpcValue vi_node;
 	n.getParam("/vi_node", vi_node);
