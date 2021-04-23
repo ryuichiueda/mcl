@@ -1,7 +1,8 @@
 /*
  *  Copyright (c) 2021, Ryuichi Ueda
  *  All rights reserved.
- *
+ *  Some parts are derived from https://github.com/ros-planning/navigation/tree/noetic-devel/amcl. 
+ *  So this software is provided under the terms of the GNU Lesser General Public License (LGPL).
  */
 
 #include <ros/ros.h>
@@ -21,6 +22,9 @@ public:
 	MclNode()
 	{
 		pf_ = new Pf();
+		global_frame_id_ = "map";
+		base_frame_id_ = "base_link";
+		odom_frame_id_ = "odom";
 	//	ros::Subscriber sub = nh_.subscribe("/cmd_vel", 1, &MclNode::receive_cmdvel, this);
 	}
 	~MclNode()
@@ -40,14 +44,18 @@ public:
 private:
 	Pf *pf_;
 	ros::NodeHandle nh_;
+
+	string base_frame_id_;
+	string global_frame_id_;
+	string odom_frame_id_;
 };
 
 int main(int argc, char **argv)
 {
 
 	ros::init(argc,argv,"mcl_node");
-	ros::NodeHandle n;
 
+	/*
 	while(!ros::service::waitForService("/static_map", ros::Duration(3.0))){
 		ROS_INFO("Waiting for static_map");
 	}
@@ -60,6 +68,7 @@ int main(int argc, char **argv)
 		ROS_ERROR("static_map not working");
 		return 1;
 	}
+	*/
 
 	MclNode mcl();
 
