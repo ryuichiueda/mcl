@@ -19,6 +19,7 @@ public:
 	~Pf();
 
 	Particle particles[100];
+	void setVelocity(double vel, double rot);
 };
 
 #endif

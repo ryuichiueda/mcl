@@ -6,7 +6,7 @@
   <arg name="initial_pose_a" default="0.0"/>
 
   <!-- AMCL -->
-  <node pkg="mcl" type="mcl_node" name="mcl_node">
+  <node pkg="mcl" type="mcl_node" name="mcl_node" output="screen">
 
     <param name="min_particles"             value="500"/>
     <param name="max_particles"             value="3000"/>

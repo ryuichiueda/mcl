@@ -11,3 +11,7 @@ Particle::Particle()
 
 Pf::Pf(){}
 Pf::~Pf(){}
+
+void Pf::setVelocity(double vel, double rot)
+{
+}

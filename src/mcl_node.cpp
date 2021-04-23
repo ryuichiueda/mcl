@@ -7,6 +7,7 @@
 #include <ros/ros.h>
 #include "nav_msgs/GetMap.h"
 #include "nav_msgs/OccupancyGrid.h"
+#include "geometry_msgs/Twist.h"
 #include "Pf.h"
 /*
 #include <iostream>
@@ -14,8 +15,36 @@
 */
 using namespace std;
 
+class MclNode
+{
+public:
+	MclNode()
+	{
+		pf_ = new Pf();
+	//	ros::Subscriber sub = nh_.subscribe("/cmd_vel", 1, &MclNode::receive_cmdvel, this);
+	}
+	~MclNode()
+	{
+		delete pf_;
+	}
+
+	/*
+	void receive_cmdvel(const geometry_msgs::Twist::ConstPtr& msg)
+	{
+		pf_->setVelocity(msg->linear.x, msg->angular.z);
+		ROS_INFO("linear: %f", msg->linear.x);
+		ROS_INFO("angular: %f", msg->angular.z);
+	}
+	*/
+
+private:
+	Pf *pf_;
+	ros::NodeHandle nh_;
+};
+
 int main(int argc, char **argv)
 {
+
 	ros::init(argc,argv,"mcl_node");
 	ros::NodeHandle n;
 
@@ -32,7 +61,8 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	Pf pf();
+	MclNode mcl();
+
 	/*
 	XmlRpc::XmlRpcValue vi_node;
 	n.getParam("/vi_node", vi_node);
