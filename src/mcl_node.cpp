@@ -44,6 +44,7 @@ public:
 		geometry_msgs::TransformStamped tmp_tf_stamped;
 		tmp_tf_stamped.header.frame_id = global_frame_id_;
 		tmp_tf_stamped.child_frame_id = odom_frame_id_;
+		tmp_tf_stamped.header.stamp = ros::Time::now();
 
 		tmp_tf_stamped.transform.translation.x = 0.0;
 		tmp_tf_stamped.transform.translation.y = 0.0;
