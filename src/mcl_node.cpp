@@ -14,6 +14,12 @@
 #include <iostream>
 #include <vector>
 */
+
+//#include "tf2_ros/buffer.h"
+//#include "tf2_ros/message_filter.h"
+#include "tf2_ros/transform_broadcaster.h"
+#include "tf2_ros/transform_listener.h"
+
 using namespace std;
 
 class MclNode
@@ -25,21 +31,32 @@ public:
 		global_frame_id_ = "map";
 		base_frame_id_ = "base_link";
 		odom_frame_id_ = "odom";
-	//	ros::Subscriber sub = nh_.subscribe("/cmd_vel", 1, &MclNode::receive_cmdvel, this);
+
+		tfb_.reset(new tf2_ros::TransformBroadcaster());
 	}
 	~MclNode()
 	{
 		delete pf_;
 	}
 
-	/*
-	void receive_cmdvel(const geometry_msgs::Twist::ConstPtr& msg)
+	void loop(void)
 	{
-		pf_->setVelocity(msg->linear.x, msg->angular.z);
-		ROS_INFO("linear: %f", msg->linear.x);
-		ROS_INFO("angular: %f", msg->angular.z);
+		geometry_msgs::TransformStamped tmp_tf_stamped;
+		tmp_tf_stamped.header.frame_id = global_frame_id_;
+		tmp_tf_stamped.child_frame_id = odom_frame_id_;
+
+		tmp_tf_stamped.transform.translation.x = 0.0;
+		tmp_tf_stamped.transform.translation.y = 0.0;
+		tmp_tf_stamped.transform.translation.z = 0.0;
+		tf2::Quaternion q;
+		q.setRPY(0, 0, 0);
+		tmp_tf_stamped.transform.rotation.x = q.x();
+		tmp_tf_stamped.transform.rotation.y = q.y();
+		tmp_tf_stamped.transform.rotation.z = q.z();
+		tmp_tf_stamped.transform.rotation.w = q.w();
+
+		this->tfb_->sendTransform(tmp_tf_stamped);
 	}
-	*/
 
 private:
 	Pf *pf_;
@@ -48,38 +65,28 @@ private:
 	string base_frame_id_;
 	string global_frame_id_;
 	string odom_frame_id_;
+
+	std::shared_ptr<tf2_ros::TransformBroadcaster> tfb_;
+	std::shared_ptr<tf2_ros::TransformListener> tfl_;
+	std::shared_ptr<tf2_ros::Buffer> tf_;
 };
 
 int main(int argc, char **argv)
 {
 
 	ros::init(argc,argv,"mcl_node");
+	MclNode node;
 
-	/*
-	while(!ros::service::waitForService("/static_map", ros::Duration(3.0))){
-		ROS_INFO("Waiting for static_map");
+	ros::Rate loop_rate(10);
+	while (ros::ok())
+	{
+		ROS_INFO("%s", "send");
+
+		node.loop();
+
+		ros::spinOnce();
+		loop_rate.sleep();
 	}
-
-	ros::ServiceClient client = n.serviceClient<nav_msgs::GetMap>("/static_map");
-
-	nav_msgs::GetMap::Request req;
-	nav_msgs::GetMap::Response res;
-	if(not client.call(req, res)){
-		ROS_ERROR("static_map not working");
-		return 1;
-	}
-	*/
-
-	MclNode mcl();
-
-	/*
-	XmlRpc::XmlRpcValue vi_node;
-	n.getParam("/vi_node", vi_node);
-	ROS_ASSERT(vi_node.getType() == XmlRpc::XmlRpcValue::TypeStruct);
-
-	ValueIterator value_iterator(res.map, vi_node);
-	ViActionServer vi_server(n, value_iterator);
-	*/
 
 	ros::spin();
 
