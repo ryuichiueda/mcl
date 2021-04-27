@@ -1,17 +1,13 @@
-#include "Pf.h"
+#include "mcl/Pf.h"
 #include <stdlib.h>
 
 Particle::Particle()
 {
-	x = (double)rand()/RAND_MAX;
-	y = (double)rand()/RAND_MAX;
-	t = (double)rand()/RAND_MAX;
-	w = 1.0;
 }
 
-Pf::Pf(){}
-Pf::~Pf(){}
+ParticleFilter::ParticleFilter(){}
+ParticleFilter::~ParticleFilter(){}
 
-void Pf::setVelocity(double vel, double rot)
+void ParticleFilter::updateOdom(double x, double y, double t)
 {
 }

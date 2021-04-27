@@ -14,7 +14,7 @@
 #include "geometry_msgs/Twist.h"
 #include "geometry_msgs/PoseStamped.h"
 
-#include "Pf.h"
+#include "mcl/Pf.h"
 
 //#include "tf2_ros/buffer.h"
 //#include "tf2_ros/message_filter.h"
@@ -35,7 +35,7 @@ class MclNode
 public:
 	MclNode()
 	{
-		pf_ = new Pf();
+		pf_ = new ParticleFilter();
 		global_frame_id_ = "map";
 		base_frame_id_ = "base_link";
 		odom_frame_id_ = "odom";
@@ -52,7 +52,8 @@ public:
 	void loop(void)
 	{
 		double x, y, t;
-		getOdomPose(latest_odom_pose_, x, y, t);
+		if(not getOdomPose(latest_odom_pose_, x, y, t))
+			ROS_INFO("can't get odometry info");
 
 		std::cerr << "!!!" << x << " " << y << " " << t << std::endl;
 
@@ -60,7 +61,7 @@ public:
 	}
 
 private:
-	Pf *pf_;
+	ParticleFilter *pf_;
 	ros::NodeHandle nh_;
 
 	string base_frame_id_;
