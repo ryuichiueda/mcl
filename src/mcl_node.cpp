@@ -97,7 +97,7 @@ private:
 	{
 		geometry_msgs::PoseStamped ident;
 		ident.header.frame_id = base_frame_id_;
-		ident.header.stamp = ros::Time::now();
+		ident.header.stamp = ros::Time(0);
 		tf2::toMsg(tf2::Transform::getIdentity(), ident.pose);
 		
 		try{
