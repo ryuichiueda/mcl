@@ -13,6 +13,7 @@
 
 #include "geometry_msgs/Twist.h"
 #include "geometry_msgs/PoseStamped.h"
+#include "geometry_msgs/PoseArray.h"
 
 #include "mcl/Pf.h"
 
@@ -43,6 +44,8 @@ public:
 		tfb_.reset(new tf2_ros::TransformBroadcaster());
 		tf_.reset(new tf2_ros::Buffer());
 		tfl_.reset(new tf2_ros::TransformListener(*tf_));
+
+		particlecloud_pub_ = nh_.advertise<geometry_msgs::PoseArray>("particlecloud", 2, true);
 	}
 	~MclNode()
 	{
@@ -55,7 +58,9 @@ public:
 		if(not getOdomPose(latest_odom_pose_, x, y, t))
 			ROS_INFO("can't get odometry info");
 
-		std::cerr << "!!!" << x << " " << y << " " << t << std::endl;
+		pf_->updateOdom(x, y, t);
+
+		publishParticles();
 
 		sendTf();
 	}
@@ -63,6 +68,8 @@ public:
 private:
 	ParticleFilter *pf_;
 	ros::NodeHandle nh_;
+
+	ros::Publisher particlecloud_pub_;
 
 	string base_frame_id_;
 	string global_frame_id_;
@@ -73,6 +80,24 @@ private:
 	std::shared_ptr<tf2_ros::Buffer> tf_;
 
 	geometry_msgs::PoseStamped latest_odom_pose_;
+
+	void publishParticles(void)
+	{
+		geometry_msgs::PoseArray cloud_msg;
+		cloud_msg.header.stamp = ros::Time::now();
+		cloud_msg.header.frame_id = global_frame_id_;
+		cloud_msg.poses.resize(pf_->particles_.size());
+
+		for(int i=0;i<pf_->particles_.size();i++){		
+			cloud_msg.poses[i].position.x = pf_->particles_[i].p_.x_;
+			cloud_msg.poses[i].position.y = pf_->particles_[i].p_.y_;
+			cloud_msg.poses[i].position.z = 0; 
+			tf2::Quaternion q;
+			q.setRPY(0, 0, pf_->particles_[i].p_.t_);
+			tf2::convert(q, cloud_msg.poses[i].orientation);
+		}		
+		particlecloud_pub_.publish(cloud_msg);
+	}
 
 	void sendTf(void)
 	{
@@ -128,7 +153,6 @@ int main(int argc, char **argv)
 	{
 		ROS_INFO("%s", "send");
 
-		std::cerr << "loop" << std::endl;
 		node.loop();
 
 		ros::spinOnce();
