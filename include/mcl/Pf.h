@@ -2,6 +2,7 @@
 #define PF_H__
 
 #include <vector>
+#include <sstream>
 using namespace std;
 
 class Pose
@@ -24,6 +25,13 @@ public:
 		x_ = p.x_;
 		y_ = p.y_;
 		t_ = p.t_;
+	}
+
+	string to_s(void)
+	{
+		stringstream s;
+		s << "x:" << x_ << "\ty:" << y_ << "\tt:" << t_;
+		return s.str();
 	}
 
 	double x_, y_, t_;

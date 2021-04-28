@@ -20,6 +20,7 @@ ParticleFilter::~ParticleFilter(){}
 void ParticleFilter::updateOdom(double x, double y, double t)
 {
 	last_odom_.set(x, y, t);
+	cout << "odom:" << last_odom_.to_s() << endl;
 
 	/* These lines should be refactored. */
 	double dx = x - prev_odom_.x_;
@@ -31,19 +32,17 @@ void ParticleFilter::updateOdom(double x, double y, double t)
 	if(fabs(dx) < 0.001 and fabs(dy) < 0.001 and fabs(dt) < 0.001)
 		return;
 
-	/*
 	for(auto &p : particles_){
 		double ang = move_direction + p.p_.t_;
 
-		double ang_e = ang + 3.141592*18*((double)rand()/RAND_MAX - 0.5);
+		double ang_e = ang + 3.141592/18*((double)rand()/RAND_MAX - 0.5);
 		double move_length_e = move_length + 0.1*((double)rand()/RAND_MAX - 0.5);
-		double dt_e = dt + 3.141592*18*((double)rand()/RAND_MAX - 0.5);
+		double dt_e = dt + 3.141592/18*((double)rand()/RAND_MAX - 0.5);
 
 		p.p_.x_ += move_length_e*cos(ang_e);
 		p.p_.y_ += move_length_e*sin(ang_e);
 		p.p_.t_ += dt_e;
 	}
-	*/
 
 	prev_odom_.set(last_odom_);
 }
