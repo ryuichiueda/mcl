@@ -55,8 +55,10 @@ public:
 	void loop(void)
 	{
 		double x, y, t;
-		if(not getOdomPose(latest_odom_pose_, x, y, t))
+		if(not getOdomPose(latest_odom_pose_, x, y, t)){
 			ROS_INFO("can't get odometry info");
+			return;
+		}
 
 		pf_->updateOdom(x, y, t);
 
