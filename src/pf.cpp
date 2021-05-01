@@ -1,4 +1,4 @@
-#include "mcl/Pf.h"
+#include "mcl/pf.h"
 #include <iostream>
 #include <stdlib.h>
 #include <cmath>
@@ -44,8 +44,54 @@ void ParticleFilter::updateOdom(double x, double y, double t)
 
 		p.p_.x_ += move_length_e*cos(ang_e);
 		p.p_.y_ += move_length_e*sin(ang_e);
-		p.p_.t_ += dt_e;
+		p.p_.t_ = normalizeAngle(p.p_.t_ + dt_e);
 	}
 
 	prev_odom_.set(last_odom_);
+}
+
+void ParticleFilter::meanPose(double &x_mean, double &y_mean, double &t_mean,
+				double &x_dev, double &y_dev, double &t_dev)
+{
+	double x, y, t, t2;
+	x = y = t = t2 = 0.0;
+	for(const auto &p : particles_){
+		x += p.p_.x_;
+		y += p.p_.y_;
+		t += p.p_.t_;
+		t2 += normalizeAngle(p.p_.t_ + M_PI);
+	}
+
+	x_mean = x / particles_.size();
+	y_mean = y / particles_.size();
+	t_mean = t / particles_.size();
+	double t2_mean = t2 / particles_.size();
+
+	double xx, yy, tt, tt2;
+	xx = yy = tt = tt2 = 0.0;
+	for(const auto &p : particles_){
+		xx += pow(p.p_.x_ - x_mean, 2);
+		yy += pow(p.p_.y_ - y_mean, 2);
+		tt += pow(p.p_.t_ - t_mean, 2);
+		tt2 += pow(normalizeAngle(p.p_.t_ + M_PI) - t2_mean, 2);
+	}
+
+	if(tt > tt2){
+		tt = tt2;
+		t_mean = normalizeAngle(t2_mean - M_PI);
+	}
+
+	x_dev = sqrt(xx/(particles_.size() - 1));
+	y_dev = sqrt(yy/(particles_.size() - 1));
+	t_dev = sqrt(tt/(particles_.size() - 1));
+}
+
+double ParticleFilter::normalizeAngle(double t)
+{
+	while(t > M_PI)
+		t -= 2*M_PI;
+	while(t < -M_PI)
+		t += 2*M_PI;
+
+	return t;
 }

@@ -15,7 +15,7 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/PoseArray.h"
 
-#include "mcl/Pf.h"
+#include "mcl/pf.h"
 
 //#include "tf2_ros/buffer.h"
 //#include "tf2_ros/message_filter.h"
@@ -61,6 +61,10 @@ public:
 		}
 
 		pf_->updateOdom(x, y, t);
+
+		double x_dev, y_dev, t_dev;
+		pf_->meanPose(x, y, t, x_dev, y_dev, t_dev);
+		ROS_INFO("pos: %f, %f, %f\ndev: %f, %f, %f\n", x, y, t, x_dev, y_dev, t_dev);
 
 		publishParticles();
 

@@ -54,9 +54,12 @@ public:
 
 	vector<Particle> particles_;
 	void updateOdom(double x, double y, double t);
+	void meanPose(double &x_mean, double &y_mean, double &t_mean, double &x_dev, double &y_dev, double &t_dev);
 private:
 	Pose last_odom_;
 	Pose prev_odom_;
+
+	double normalizeAngle(double t);
 };
 
 #endif
