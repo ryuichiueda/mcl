@@ -28,9 +28,10 @@ void ParticleFilter::updateOdom(double x, double y, double t)
 	double move_direction = (move_length > 0.000001 ? atan2(dy, dx) : 0.0) - prev_odom_.t_;
 	double dt = t - prev_odom_.t_;
 
-	/* 最初のデータが0 0 0になっているのでTFを待つ処理が必要 */ 
+	/*
 	cout << "\nxty" << x << " " << y << " " << t << endl;
 	cout << "\ndiff" << dx << " " << dy << " " << move_length << " " << move_direction << " " << dt << endl;
+	*/
 
 	if(fabs(dx) < 0.001 and fabs(dy) < 0.001 and fabs(dt) < 0.001)
 		return;

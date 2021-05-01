@@ -64,7 +64,8 @@ public:
 
 		double x_dev, y_dev, t_dev;
 		pf_->meanPose(x, y, t, x_dev, y_dev, t_dev);
-		ROS_INFO("pos: %f, %f, %f\ndev: %f, %f, %f\n", x, y, t, x_dev, y_dev, t_dev);
+		//ROS_INFO("pos: %f, %f, %f\ndev: %f, %f, %f\n", x, y, t, x_dev, y_dev, t_dev);
+		publishOdomFrame(x, y, t);
 
 		publishParticles();
 
@@ -85,7 +86,52 @@ private:
 	std::shared_ptr<tf2_ros::TransformListener> tfl_;
 	std::shared_ptr<tf2_ros::Buffer> tf_;
 
+	tf2::Transform latest_tf_;
+
 	geometry_msgs::PoseStamped latest_odom_pose_;
+
+	void publishOdomFrame(double x, double y, double t)
+	{
+		/*
+		geometry_msgs::PoseWithCovarianceStamped p;
+		p.header.frame_id = global_frame_id_;
+		p.header.stamp = ros::Time::now();
+		p.pose.pose.position.x = x;
+		p.pose.pose.position.y = y;
+		
+		tf2::Quaternion q;
+		q.setRPY(0, 0, t);
+		tf2::convert(q, p.pose.pose.orientation);
+		*/
+		
+		geometry_msgs::PoseStamped odom_to_map;
+		try{
+			tf2::Quaternion q;
+			q.setRPY(0, 0, t);
+			tf2::Transform tmp_tf(q, tf2::Vector3(x, y, 0.0));
+					
+			geometry_msgs::PoseStamped tmp_tf_stamped;
+			tmp_tf_stamped.header.frame_id = base_frame_id_;
+			tmp_tf_stamped.header.stamp = ros::Time(0);
+			tf2::toMsg(tmp_tf.inverse(), tmp_tf_stamped.pose);
+			
+			tf_->transform(tmp_tf_stamped, odom_to_map, odom_frame_id_);
+
+		}catch(tf2::TransformException){
+			ROS_DEBUG("Failed to subtract base to odom transform");
+			return;
+		}
+		tf2::convert(odom_to_map.pose, latest_tf_);
+		
+		ros::Time transform_expiration = (ros::Time(ros::Time::now().toSec() + 0.2));
+		geometry_msgs::TransformStamped tmp_tf_stamped;
+		tmp_tf_stamped.header.frame_id = global_frame_id_;
+		tmp_tf_stamped.header.stamp = transform_expiration;
+		tmp_tf_stamped.child_frame_id = odom_frame_id_;
+		tf2::convert(latest_tf_.inverse(), tmp_tf_stamped.transform);
+		
+		tfb_->sendTransform(tmp_tf_stamped);
+	}
 
 	void publishParticles(void)
 	{
@@ -157,8 +203,6 @@ int main(int argc, char **argv)
 	ros::Rate loop_rate(10);
 	while (ros::ok())
 	{
-		ROS_INFO("%s", "send");
-
 		node.loop();
 
 		ros::spinOnce();
