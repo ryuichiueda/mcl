@@ -40,7 +40,7 @@ public:
 class Particle
 {
 public:
-	Particle(double x, double y, double t);
+	Particle(double x, double y, double t, double w);
 	Pose p_;
 	double w_;
 };
@@ -48,7 +48,7 @@ public:
 class ParticleFilter
 {
 public: 
-	ParticleFilter(double x, double y, double t);
+	ParticleFilter(double x, double y, double t, int num);
 	~ParticleFilter();
 
 	vector<Particle> particles_;

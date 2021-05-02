@@ -5,14 +5,18 @@
 #include <cmath>
 using namespace std;
 
-Particle::Particle(double x, double y, double t) : p_(x, y, t)
+Particle::Particle(double x, double y, double t, double w) : p_(x, y, t)
 {
+	w_ = w;
 }
 
-ParticleFilter::ParticleFilter(double x, double y, double t) : last_odom_(NULL), prev_odom_(NULL)
+ParticleFilter::ParticleFilter(double x, double y, double t, int num) : last_odom_(NULL), prev_odom_(NULL)
 {
-	Particle p(x,y,t);
-	for(int i=0;i<100;i++)
+	if(num <= 0)
+		ROS_ERROR("NO PARTICLE");
+
+	Particle p(x, y, t, 1.0/num);
+	for(int i=0; i<num; i++)
 		particles_.push_back(p);
 }
 
