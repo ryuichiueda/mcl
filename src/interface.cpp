@@ -46,11 +46,13 @@ void MclNode::loop(void)
 	pf_->meanPose(x, y, t, x_var, y_var, t_var, xy_cov, yt_cov, tx_cov);
 
 	publishOdomFrame(x, y, t);
-	publishPose(x, y, t);
+	publishPose(x, y, t, x_var, y_var, t_var, xy_cov, yt_cov, tx_cov);
 	publishParticles();
 }
 
-void MclNode::publishPose(double x, double y, double t)
+void MclNode::publishPose(double x, double y, double t,
+			double x_dev, double y_dev, double t_dev,
+			double xy_cov, double yt_cov, double tx_cov)
 {
 	geometry_msgs::PoseWithCovarianceStamped p;
 	p.header.frame_id = global_frame_id_;

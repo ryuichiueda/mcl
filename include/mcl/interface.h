@@ -44,7 +44,9 @@ private:
 
 	//geometry_msgs::PoseStamped latest_odom_pose_;
 
-	void publishPose(double x, double y, double t);
+	void publishPose(double x, double y, double t,
+			double x_dev, double y_dev, double t_dev,
+			double xy_cov, double yt_cov, double tx_cov);
 	void publishOdomFrame(double x, double y, double t);
 	void publishParticles(void);
 	void sendTf(void);
