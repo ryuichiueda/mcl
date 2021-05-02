@@ -46,6 +46,7 @@ public:
 		tfl_.reset(new tf2_ros::TransformListener(*tf_));
 
 		particlecloud_pub_ = nh_.advertise<geometry_msgs::PoseArray>("particlecloud", 2, true);
+		pose_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("mcl_pose", 2, true);
 	}
 	~MclNode()
 	{
@@ -66,6 +67,7 @@ public:
 		pf_->meanPose(x, y, t, x_dev, y_dev, t_dev);
 		//ROS_INFO("pos: %f, %f, %f\ndev: %f, %f, %f\n", x, y, t, x_dev, y_dev, t_dev);
 		publishOdomFrame(x, y, t);
+		publishPose(x, y, t);
 
 		publishParticles();
 
@@ -77,6 +79,7 @@ private:
 	ros::NodeHandle nh_;
 
 	ros::Publisher particlecloud_pub_;
+	ros::Publisher pose_pub_;
 
 	string base_frame_id_;
 	string global_frame_id_;
@@ -90,9 +93,8 @@ private:
 
 	geometry_msgs::PoseStamped latest_odom_pose_;
 
-	void publishOdomFrame(double x, double y, double t)
+	void publishPose(double x, double y, double t)
 	{
-		/*
 		geometry_msgs::PoseWithCovarianceStamped p;
 		p.header.frame_id = global_frame_id_;
 		p.header.stamp = ros::Time::now();
@@ -102,8 +104,12 @@ private:
 		tf2::Quaternion q;
 		q.setRPY(0, 0, t);
 		tf2::convert(q, p.pose.pose.orientation);
-		*/
-		
+
+		pose_pub_.publish(p);
+	}
+
+	void publishOdomFrame(double x, double y, double t)
+	{
 		geometry_msgs::PoseStamped odom_to_map;
 		try{
 			tf2::Quaternion q;
