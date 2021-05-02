@@ -47,7 +47,8 @@ void ParticleFilter::updateOdom(double x, double y, double t)
 }
 
 void ParticleFilter::meanPose(double &x_mean, double &y_mean, double &t_mean,
-				double &x_dev, double &y_dev, double &t_dev)
+				double &x_dev, double &y_dev, double &t_dev,
+				double &xy_cov, double &yt_cov, double &tx_cov)
 {
 	double x, y, t, t2;
 	x = y = t = t2 = 0.0;
@@ -77,9 +78,21 @@ void ParticleFilter::meanPose(double &x_mean, double &y_mean, double &t_mean,
 		t_mean = normalizeAngle(t2_mean - M_PI);
 	}
 
-	x_dev = sqrt(xx/(particles_.size() - 1));
-	y_dev = sqrt(yy/(particles_.size() - 1));
-	t_dev = sqrt(tt/(particles_.size() - 1));
+	x_dev = xx/(particles_.size() - 1);
+	y_dev = yy/(particles_.size() - 1);
+	t_dev = tt/(particles_.size() - 1);
+
+	double xy, yt, tx;
+	xy = yt = tx = 0.0;
+	for(const auto &p : particles_){
+		xy += (p.p_.x_ - x_mean)*(p.p_.y_ - y_mean);
+		yt += (p.p_.y_ - y_mean)*(normalizeAngle(p.p_.t_ - t_mean));
+		tx += (p.p_.x_ - x_mean)*(normalizeAngle(p.p_.t_ - t_mean));
+	}
+
+	xy_cov = xy/(particles_.size() - 1);
+	yt_cov = yt/(particles_.size() - 1);
+	tx_cov = tx/(particles_.size() - 1);
 }
 
 double ParticleFilter::normalizeAngle(double t)

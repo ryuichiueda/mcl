@@ -42,8 +42,8 @@ void MclNode::loop(void)
 	}
 	pf_->updateOdom(x, y, t);
 
-	double x_dev, y_dev, t_dev;
-	pf_->meanPose(x, y, t, x_dev, y_dev, t_dev);
+	double x_var, y_var, t_var, xy_cov, yt_cov, tx_cov;
+	pf_->meanPose(x, y, t, x_var, y_var, t_var, xy_cov, yt_cov, tx_cov);
 
 	publishOdomFrame(x, y, t);
 	publishPose(x, y, t);
