@@ -45,13 +45,10 @@ void MclNode::loop(void)
 
 	double x_dev, y_dev, t_dev;
 	pf_->meanPose(x, y, t, x_dev, y_dev, t_dev);
-	//ROS_INFO("pos: %f, %f, %f\ndev: %f, %f, %f\n", x, y, t, x_dev, y_dev, t_dev);
+
 	publishOdomFrame(x, y, t);
 	publishPose(x, y, t);
-
 	publishParticles();
-
-	sendTf();
 }
 
 void MclNode::publishPose(double x, double y, double t)
@@ -116,26 +113,6 @@ void MclNode::publishParticles(void)
 		tf2::convert(q, cloud_msg.poses[i].orientation);
 	}		
 	particlecloud_pub_.publish(cloud_msg);
-}
-
-void MclNode::sendTf(void)
-{
-	geometry_msgs::TransformStamped tmp_tf_stamped;
-	tmp_tf_stamped.header.frame_id = global_frame_id_;
-	tmp_tf_stamped.child_frame_id = odom_frame_id_;
-	tmp_tf_stamped.header.stamp = ros::Time::now();
-
-	tmp_tf_stamped.transform.translation.x = 0.0;
-	tmp_tf_stamped.transform.translation.y = 0.0;
-	tmp_tf_stamped.transform.translation.z = 0.0;
-	tf2::Quaternion q;
-	q.setRPY(0, 0, 0);
-	tmp_tf_stamped.transform.rotation.x = q.x();
-	tmp_tf_stamped.transform.rotation.y = q.y();
-	tmp_tf_stamped.transform.rotation.z = q.z();
-	tmp_tf_stamped.transform.rotation.w = q.w();
-
-	this->tfb_->sendTransform(tmp_tf_stamped);
 }
 
 bool MclNode::getOdomPose(geometry_msgs::PoseStamped& odom_pose, double& x, double& y, double& yaw)
