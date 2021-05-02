@@ -11,6 +11,8 @@
 
 #include "tf2/utils.h"
 #include "geometry_msgs/PoseArray.h"
+
+#include "nav_msgs/GetMap.h"
 using namespace std;
 
 MclNode::MclNode() : private_nh_("~") 
@@ -54,7 +56,18 @@ void MclNode::initPF(void)
 	int num;
 	private_nh_.param("num_particles", num, 0);
 
-	pf_.reset(new ParticleFilter(x, y, t, num, ff, fr, rf, rr));
+	nav_msgs::GetMap::Request  req;
+	nav_msgs::GetMap::Response resp;
+	ROS_INFO("Requesting the map...");
+	while(!ros::service::call("static_map", req, resp)){
+		ROS_WARN("Request for map failed; trying again...");
+		ros::Duration d(0.5);
+		d.sleep();
+	}
+	ROS_INFO("Received a %d X %d map @ %.3f m/pix\n",
+		resp.map.info.width, resp.map.info.height, resp.map.info.resolution);
+
+	pf_.reset(new ParticleFilter(x, y, t, num, ff, fr, rf, rr, resp.map));
 }
 
 void MclNode::loop(void)

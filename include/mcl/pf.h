@@ -4,6 +4,8 @@
 #include <vector>
 #include <sstream>
 #include <random>
+
+#include "nav_msgs/OccupancyGrid.h"
 using namespace std;
 
 class Pose
@@ -66,14 +68,23 @@ private:
 	
 	std::random_device seed_gen_;
 	std::default_random_engine engine_;
-	//std::default_random_engine engine_(seed_gen());
+};
+
+class OccupancyGridMap
+{
+public: 
+	OccupancyGridMap(const nav_msgs::OccupancyGrid &map);
+	~OccupancyGridMap();
+private: 
+	vector<bool *> cells_;
 };
 
 class ParticleFilter
 {
 public: 
 	ParticleFilter(double x, double y, double t, int num,
-			double ff, double fr, double rf, double rr);
+			double ff, double fr, double rf, double rr,
+			const nav_msgs::OccupancyGrid &map);
 	~ParticleFilter();
 
 	vector<Particle> particles_;
@@ -88,6 +99,8 @@ private:
 	double normalizeAngle(double t);
 
 	OdomError odom_error_;
+
+	OccupancyGridMap map_;
 };
 
 #endif

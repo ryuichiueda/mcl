@@ -5,6 +5,35 @@
 #include <cmath>
 using namespace std;
 
+OccupancyGridMap::OccupancyGridMap(const nav_msgs::OccupancyGrid &map)
+{
+/*	ROS_INFO("Received a %d X %d map @ %.3f m/pix\n",
+		resp.map.info.width, resp.map.info.height, resp.map.info.resolution);
+		*/
+
+	for(int x=0; x<map.info.width; x++){
+		cells_.push_back(new bool[map.info.height]);
+		for(int y=0; y<map.info.height; y++){
+			cells_[x][y] = map.data[x + y*map.info.width] > 50;
+		}
+	}
+
+	/*
+	for(int y=0; y<map.info.height; y++){
+		for(int x=0; x<map.info.width; x++){
+			putchar(cells_[x][y] ? '*' : ' ');
+		}
+		putchar('\n');
+	}
+	*/
+}
+
+OccupancyGridMap::~OccupancyGridMap()
+{
+	for(auto &c : cells_)
+		delete c;
+}
+
 OdomError::OdomError(double ff, double fr, double rf, double rr) 
 	: std_norm_dist_(0.0, 1.0), fw_dev_(0.0), rot_dev_(0.0), engine_(seed_gen_())
 {
@@ -36,8 +65,9 @@ Particle::Particle(double x, double y, double t, double w) : p_(x, y, t)
 }
 
 ParticleFilter::ParticleFilter(double x, double y, double t, int num, 
-				double ff, double fr, double rf, double rr) 
-	: odom_error_(ff, fr, rf, rr), last_odom_(NULL), prev_odom_(NULL)
+				double ff, double fr, double rf, double rr,
+				const nav_msgs::OccupancyGrid &map) 
+	: odom_error_(ff, fr, rf, rr), last_odom_(NULL), prev_odom_(NULL), map_(map)
 {
 	if(num <= 0)
 		ROS_ERROR("NO PARTICLE");
