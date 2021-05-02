@@ -15,9 +15,9 @@ using namespace std;
 
 MclNode::MclNode() : private_nh_("~") 
 {
-	global_frame_id_ = "map";
-	base_frame_id_ = "base_footprint";
-	odom_frame_id_ = "odom";
+	private_nh_.param("global_frame_id", global_frame_id_, string("map"));
+	private_nh_.param("base_frame_id", base_frame_id_, string("base_footprint"));
+	private_nh_.param("odom_frame_id", odom_frame_id_, string("odom"));
 
 	tfb_.reset(new tf2_ros::TransformBroadcaster());
 	tf_.reset(new tf2_ros::Buffer());
