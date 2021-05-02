@@ -22,11 +22,12 @@ MclNode::MclNode() : private_nh_("~")
 
 	particlecloud_pub_ = nh_.advertise<geometry_msgs::PoseArray>("particlecloud", 2, true);
 	pose_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("mcl_pose", 2, true);
+
+	laser_scan_sub_ = nh_.subscribe("scan", 2, &MclNode::cbScan, this);
 }
 
 MclNode::~MclNode()
 {
-	//delete pf_;
 }
 
 void MclNode::initTF(void)
@@ -68,6 +69,10 @@ void MclNode::initPF(void)
 		resp.map.info.width, resp.map.info.height, resp.map.info.resolution);
 
 	pf_.reset(new ParticleFilter(x, y, t, num, ff, fr, rf, rr, resp.map));
+}
+
+void MclNode::cbScan(const sensor_msgs::LaserScan::ConstPtr &msg)
+{
 }
 
 void MclNode::loop(void)
