@@ -44,12 +44,17 @@ void MclNode::initPF(void)
 	private_nh_.param("initial_pose_x", x, 0.0);
 	private_nh_.param("initial_pose_y", y, 0.0);
 	private_nh_.param("initial_pose_a", t, 0.0);
-	ROS_INFO("INIT: %f, %f, %f", x, y, t);
+
+	double ff, fr, rf, rr;
+	private_nh_.param("odom_fw_dev_per_fw_", ff, 0.0);
+	private_nh_.param("odom_fw_dev_per_rot_", fr, 0.0);
+	private_nh_.param("odom_rot_dev_per_fw_", rf, 0.0);
+	private_nh_.param("odom_rot_dev_per_rot_", rr, 0.0);
 
 	int num;
 	private_nh_.param("num_particles", num, 0);
 
-	pf_.reset(new ParticleFilter(x, y, t, num));
+	pf_.reset(new ParticleFilter(x, y, t, num, ff, fr, rf, rr));
 }
 
 void MclNode::loop(void)

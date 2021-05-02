@@ -5,12 +5,39 @@
 #include <cmath>
 using namespace std;
 
+OdomError::OdomError(double ff, double fr, double rf, double rr) 
+	: std_norm_dist_(0.0, 1.0), fw_dev_(0.0), rot_dev_(0.0), engine_(seed_gen_())
+{
+	fw_var_per_fw_ = ff*ff;
+	fw_var_per_rot_ = fr*fr;
+	rot_var_per_fw_ = rf*rf;
+	rot_var_per_rot_ = rr*rr;
+}
+
+void OdomError::setDev(double length, double angle)
+{
+	fw_dev_ = sqrt( fabs(length)*fw_var_per_fw_ + fabs(angle)*fw_var_per_rot_ );
+	rot_dev_ = sqrt( fabs(length)*rot_var_per_fw_ + fabs(angle)*rot_var_per_rot_ );
+}
+
+double OdomError::drawFwNoise(void)
+{
+	return std_norm_dist_(engine_) * fw_dev_;
+}
+
+double OdomError::drawRotNoise(void)
+{
+	return std_norm_dist_(engine_) * rot_dev_;
+}
+
 Particle::Particle(double x, double y, double t, double w) : p_(x, y, t)
 {
 	w_ = w;
 }
 
-ParticleFilter::ParticleFilter(double x, double y, double t, int num) : last_odom_(NULL), prev_odom_(NULL)
+ParticleFilter::ParticleFilter(double x, double y, double t, int num, 
+				double ff, double fr, double rf, double rr) 
+	: odom_error_(ff, fr, rf, rr), last_odom_(NULL), prev_odom_(NULL)
 {
 	if(num <= 0)
 		ROS_ERROR("NO PARTICLE");
@@ -34,26 +61,27 @@ void ParticleFilter::updateOdom(double x, double y, double t)
 	}else
 		last_odom_->set(x, y, t);
 
-	/* These lines should be refactored. */
 	double dx = x - prev_odom_->x_;
 	double dy = y - prev_odom_->y_;
-	double move_length = sqrt(dx*dx + dy*dy);
-	double move_direction = (move_length > 0.000001 ? atan2(dy, dx) : 0.0) - prev_odom_->t_;
-	double dt = t - prev_odom_->t_;
-	//ROS_INFO("diff: %f, %f, %f, %f", dx, dy, dt, last_odom_.x_);
+	double dt = normalizeAngle(t - prev_odom_->t_);
 
 	if(fabs(dx) < 0.001 and fabs(dy) < 0.001 and fabs(dt) < 0.001)
 		return;
 
+	double fw_length = sqrt(dx*dx + dy*dy);
+	double fw_direction = normalizeAngle((fw_length > 0.000001 ? atan2(dy, dx) : 0.0) - prev_odom_->t_);
+
+	odom_error_.setDev(fw_length, dt);
+
 	for(auto &p : particles_){
-		double ang = move_direction + p.p_.t_;
+		double rot_noise = odom_error_.drawRotNoise();
 
-		double ang_e = ang + 3.141592/36*((double)rand()/RAND_MAX - 0.5);
-		double move_length_e = move_length + 0.01*((double)rand()/RAND_MAX - 0.5);
-		double dt_e = dt + 3.141592/26*((double)rand()/RAND_MAX - 0.5);
+		double fw_length_e = fw_length + odom_error_.drawRotNoise();
+		double ang_e = fw_direction + p.p_.t_ + rot_noise;
+		double dt_e = dt + rot_noise;
 
-		p.p_.x_ += move_length_e*cos(ang_e);
-		p.p_.y_ += move_length_e*sin(ang_e);
+		p.p_.x_ += fw_length_e*cos(ang_e);
+		p.p_.y_ += fw_length_e*sin(ang_e);
 		p.p_.t_ = normalizeAngle(p.p_.t_ + dt_e);
 	}
 

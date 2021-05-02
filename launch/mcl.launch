@@ -16,15 +16,19 @@
     <param name="initial_pose_y"            value="$(arg initial_pose_y)"/>
     <param name="initial_pose_a"            value="$(arg initial_pose_a)"/>
 
+    <param name="odom_fw_dev_per_fw_"       value="0.05"/>
+    <param name="odom_fw_dev_per_rot_"      value="0.00001"/>
+    <param name="odom_rot_dev_per_fw_"      value="0.03"/>
+    <param name="odom_rot_dev_per_rot_"     value="0.05"/>
 <!--
-    <param name="max_particles"             value="3000"/>
-    <param name="kld_err"                   value="0.02"/>
-    <param name="update_min_d"              value="0.20"/>
-    <param name="update_min_a"              value="0.20"/>
-    <param name="resample_interval"         value="1"/>
+    <param name="odom_fw_dev_per_fw_"       value="0.19"/>
+    <param name="odom_fw_dev_per_rot_"      value="0.0001"/>
+    <param name="odom_rot_dev_per_fw_"      value="0.13"/>
+    <param name="odom_rot_dev_per_rot_"     value="0.2"/>
+-->
+
+<!--
     <param name="transform_tolerance"       value="0.5"/>
-    <param name="recovery_alpha_slow"       value="0.00"/>
-    <param name="recovery_alpha_fast"       value="0.00"/>
     <param name="gui_publish_rate"          value="50.0"/>
 
     <remap from="scan"                      to="$(arg scan_topic)"/>
