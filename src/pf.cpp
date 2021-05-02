@@ -1,32 +1,42 @@
 #include "mcl/pf.h"
+#include <ros/ros.h>
 #include <iostream>
 #include <stdlib.h>
 #include <cmath>
 using namespace std;
 
-Particle::Particle()
+Particle::Particle(double x, double y, double t) : p_(x, y, t)
 {
 }
 
-ParticleFilter::ParticleFilter()
+ParticleFilter::ParticleFilter(double x, double y, double t) : last_odom_(NULL), prev_odom_(NULL)
 {
-	Particle p;
+	Particle p(x,y,t);
 	for(int i=0;i<100;i++)
 		particles_.push_back(p);
 }
 
-ParticleFilter::~ParticleFilter(){}
+ParticleFilter::~ParticleFilter()
+{
+	delete last_odom_;
+	delete prev_odom_;
+}
 
 void ParticleFilter::updateOdom(double x, double y, double t)
 {
-	last_odom_.set(x, y, t);
+	if(last_odom_ == NULL){
+		last_odom_ = new Pose(x, y, t);
+		prev_odom_ = new Pose(x, y, t);
+	}else
+		last_odom_->set(x, y, t);
 
 	/* These lines should be refactored. */
-	double dx = x - prev_odom_.x_;
-	double dy = y - prev_odom_.y_;
+	double dx = x - prev_odom_->x_;
+	double dy = y - prev_odom_->y_;
 	double move_length = sqrt(dx*dx + dy*dy);
-	double move_direction = (move_length > 0.000001 ? atan2(dy, dx) : 0.0) - prev_odom_.t_;
-	double dt = t - prev_odom_.t_;
+	double move_direction = (move_length > 0.000001 ? atan2(dy, dx) : 0.0) - prev_odom_->t_;
+	double dt = t - prev_odom_->t_;
+	//ROS_INFO("diff: %f, %f, %f, %f", dx, dy, dt, last_odom_.x_);
 
 	if(fabs(dx) < 0.001 and fabs(dy) < 0.001 and fabs(dt) < 0.001)
 		return;
@@ -43,7 +53,7 @@ void ParticleFilter::updateOdom(double x, double y, double t)
 		p.p_.t_ = normalizeAngle(p.p_.t_ + dt_e);
 	}
 
-	prev_odom_.set(last_odom_);
+	prev_odom_->set(*last_odom_);
 }
 
 void ParticleFilter::meanPose(double &x_mean, double &y_mean, double &t_mean,

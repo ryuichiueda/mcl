@@ -28,6 +28,7 @@ public:
 private:
 	ParticleFilter *pf_;
 	ros::NodeHandle nh_;
+	ros::NodeHandle private_nh_;
 
 	ros::Publisher particlecloud_pub_;
 	ros::Publisher pose_pub_;
@@ -41,8 +42,6 @@ private:
 	std::shared_ptr<tf2_ros::Buffer> tf_;
 
 	tf2::Transform latest_tf_;
-
-	//geometry_msgs::PoseStamped latest_odom_pose_;
 
 	void publishPose(double x, double y, double t,
 			double x_dev, double y_dev, double t_dev,

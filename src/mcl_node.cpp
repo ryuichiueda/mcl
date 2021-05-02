@@ -13,7 +13,7 @@ using namespace std;
 int main(int argc, char **argv)
 {
 
-	ros::init(argc,argv,"mcl_node");
+	ros::init(argc, argv, "mcl_node");
 	MclNode node;
 
 	ros::Rate loop_rate(10);

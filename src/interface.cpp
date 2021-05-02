@@ -13,9 +13,8 @@
 #include "geometry_msgs/PoseArray.h"
 using namespace std;
 
-MclNode::MclNode()
+MclNode::MclNode() : private_nh_("~") 
 {
-	pf_ = new ParticleFilter();
 	global_frame_id_ = "map";
 	base_frame_id_ = "base_link";
 	odom_frame_id_ = "odom";
@@ -26,6 +25,15 @@ MclNode::MclNode()
 
 	particlecloud_pub_ = nh_.advertise<geometry_msgs::PoseArray>("particlecloud", 2, true);
 	pose_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("mcl_pose", 2, true);
+
+
+	double x, y, t;
+	private_nh_.param("initial_pose_x", x, 0.0);
+	private_nh_.param("initial_pose_y", y, 0.0);
+	private_nh_.param("initial_pose_a", t, 0.0);
+	ROS_INFO("INIT: %f, %f, %f", x, y, t);
+
+	pf_ = new ParticleFilter(x, y, t);
 }
 
 MclNode::~MclNode()

@@ -8,9 +8,9 @@ using namespace std;
 class Pose
 {
 public:
-	Pose()
+	Pose(double x, double y, double t)
 	{
-		set(-2.0, -0.5, 0.0);
+		set(x, y, t);
 	}
 
 	void set(double x, double y, double t)
@@ -40,8 +40,7 @@ public:
 class Particle
 {
 public:
-	Particle();
-
+	Particle(double x, double y, double t);
 	Pose p_;
 	double w_;
 };
@@ -49,7 +48,7 @@ public:
 class ParticleFilter
 {
 public: 
-	ParticleFilter();
+	ParticleFilter(double x, double y, double t);
 	~ParticleFilter();
 
 	vector<Particle> particles_;
@@ -58,8 +57,8 @@ public:
 			double &x_var, double &y_var, double &t_var,
 			double &xy_cov, double &yt_cov, double &tx_cov);
 private:
-	Pose last_odom_;
-	Pose prev_odom_;
+	Pose *last_odom_;
+	Pose *prev_odom_;
 
 	double normalizeAngle(double t);
 };
