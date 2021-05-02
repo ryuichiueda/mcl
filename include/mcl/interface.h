@@ -42,13 +42,13 @@ private:
 
 	tf2::Transform latest_tf_;
 
-	geometry_msgs::PoseStamped latest_odom_pose_;
+	//geometry_msgs::PoseStamped latest_odom_pose_;
 
 	void publishPose(double x, double y, double t);
 	void publishOdomFrame(double x, double y, double t);
 	void publishParticles(void);
 	void sendTf(void);
-	bool getOdomPose(geometry_msgs::PoseStamped& odom_pose, double& x, double& y, double& yaw);
+	bool getOdomPose(double& x, double& y, double& yaw);
 };
 
 #endif

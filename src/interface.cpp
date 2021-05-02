@@ -36,11 +36,10 @@ MclNode::~MclNode()
 void MclNode::loop(void)
 {
 	double x, y, t;
-	if(not getOdomPose(latest_odom_pose_, x, y, t)){
+	if(not getOdomPose(x, y, t)){
 		ROS_INFO("can't get odometry info");
 		return;
 	}
-
 	pf_->updateOdom(x, y, t);
 
 	double x_dev, y_dev, t_dev;
@@ -115,20 +114,20 @@ void MclNode::publishParticles(void)
 	particlecloud_pub_.publish(cloud_msg);
 }
 
-bool MclNode::getOdomPose(geometry_msgs::PoseStamped& odom_pose, double& x, double& y, double& yaw)
+bool MclNode::getOdomPose(double& x, double& y, double& yaw)
 {
 	geometry_msgs::PoseStamped ident;
 	ident.header.frame_id = base_frame_id_;
 	ident.header.stamp = ros::Time(0);
 	tf2::toMsg(tf2::Transform::getIdentity(), ident.pose);
 	
+	geometry_msgs::PoseStamped odom_pose;
 	try{
 		this->tf_->transform(ident, odom_pose, odom_frame_id_);
 	}catch(tf2::TransformException e){
     		ROS_WARN("Failed to compute odom pose, skipping scan (%s)", e.what());
 		return false;
 	}
-
 	x = odom_pose.pose.position.x;
 	y = odom_pose.pose.position.y;
 	yaw = tf2::getYaw(odom_pose.pose.orientation);
