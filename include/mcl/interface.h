@@ -26,7 +26,7 @@ public:
 
 	void loop(void);
 private:
-	ParticleFilter *pf_;
+	std::shared_ptr<ParticleFilter> pf_;
 	ros::NodeHandle nh_;
 	ros::NodeHandle private_nh_;
 
@@ -50,6 +50,9 @@ private:
 	void publishParticles(void);
 	void sendTf(void);
 	bool getOdomPose(double& x, double& y, double& yaw);
+
+	void initTF(void);
+	void initPF(void);
 };
 
 #endif
