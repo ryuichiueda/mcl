@@ -73,7 +73,7 @@ void MclNode::initPF(void)
 
 void MclNode::cbScan(const sensor_msgs::LaserScan::ConstPtr &msg)
 {
-	pf_->setScan(msg->header.seq, &msg->ranges);
+	pf_->setScan(msg);
 }
 
 void MclNode::loop(void)

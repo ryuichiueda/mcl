@@ -5,16 +5,22 @@
 #include <cmath>
 using namespace std;
 
+
 OccupancyGridMap::OccupancyGridMap(const nav_msgs::OccupancyGrid &map)
 {
 /*	ROS_INFO("Received a %d X %d map @ %.3f m/pix\n",
 		resp.map.info.width, resp.map.info.height, resp.map.info.resolution);
 		*/
 
-	for(int x=0; x<map.info.width; x++){
-		cells_.push_back(new bool[map.info.height]);
-		for(int y=0; y<map.info.height; y++){
-			cells_[x][y] = map.data[x + y*map.info.width] > 50;
+	width_ = map.info.width;
+	height_ = map.info.height;
+
+	resolution_ = map.info.resolution;
+
+	for(int x=0; x<width_; x++){
+		cells_.push_back(new bool[height_]);
+		for(int y=0; y<height_; y++){
+			cells_[x][y] = map.data[x + y*width_] > 50;
 		}
 	}
 
@@ -28,10 +34,49 @@ OccupancyGridMap::OccupancyGridMap(const nav_msgs::OccupancyGrid &map)
 	*/
 }
 
+
 OccupancyGridMap::~OccupancyGridMap()
 {
 	for(auto &c : cells_)
 		delete c;
+}
+
+bool *OccupancyGridMap::posToCell(double x, double y)
+{
+	double shift_x = x + resolution_*width_/2;
+	double shift_y = y + resolution_*height_/2;
+
+	int ix = (int)floor(shift_x/resolution_);
+	int iy = (int)floor(shift_y/resolution_);
+
+	if(ix < 0 or iy < 0)
+		return NULL;
+	if(ix >= width_ or iy >= height_)
+		return NULL;
+
+	return &cells_[ix][iy];
+}
+
+int OccupancyGridMap::posToCellX(double x)
+{
+	double shift_x = x + resolution_*width_/2;
+	int ix = (int)floor(shift_x/resolution_);
+
+	if(ix < 0 or ix >= width_)
+		return -1;
+
+	return ix;
+}
+
+int OccupancyGridMap::posToCellY(double y)
+{
+	double shift_y = y + resolution_*height_/2;
+	int iy = (int)floor(shift_y/resolution_);
+
+	if(iy < 0 or iy >= height_)
+		return -1;
+
+	return iy;
 }
 
 OdomError::OdomError(double ff, double fr, double rf, double rr) 
@@ -76,7 +121,7 @@ ParticleFilter::ParticleFilter(double x, double y, double t, int num,
 	for(int i=0; i<num; i++)
 		particles_.push_back(p);
 
-	processed_scan_seq_ = -1;
+	scan_.processed_seq_ = -1;
 }
 
 ParticleFilter::~ParticleFilter()
@@ -87,27 +132,58 @@ ParticleFilter::~ParticleFilter()
 
 void ParticleFilter::updateSensor(void)
 {
-	if(processed_scan_seq_ == scan_seq_){
+	if(scan_.processed_seq_ == scan_.seq_){
 		ROS_INFO("SKIP");
 		return;
 	}
 
 	vector<double> ranges;
 	int seq = -1;
-	while(seq != scan_seq_){
-		seq = scan_seq_;
+	/* copy scan ranges safely */
+	while(seq != scan_.seq_){
 		ranges.clear();
-		copy(scan_ranges_.begin(), scan_ranges_.end(), back_inserter(ranges) );
+		seq = scan_.seq_;
+		copy(scan_.ranges_.begin(), scan_.ranges_.end(), back_inserter(ranges) );
 	}
 
-	/*
-	for(int i=0;i<scan.size();i++)
-		cout << scan[i] << " ";
-		*/
+	/* change weight */
+	vector<bool *> cells_;
+	int r = (int)floor((double)particles_.size()*rand()/RAND_MAX);
+	double px = particles_[r].p_.x_;
+	double py = particles_[r].p_.y_;
+	double pt = particles_[r].p_.t_;
 
-	cout << "-----------------------" << endl;
+	for(int i=0;i<scan_.ranges_.size();i++){
+		if(isinf(scan_.ranges_[i]))
+			continue;
 
-	processed_scan_seq_ = scan_seq_;
+		double ang = scan_.angle_min_ + i*scan_.angle_increment_;
+		double lx = px + scan_.ranges_[i] * cos(ang + pt);
+		double ly = py + scan_.ranges_[i] * sin(ang + pt);
+
+		int ix = map_.posToCellX(lx);
+		int iy = map_.posToCellY(ly);
+
+		/*
+		if(ix >= 0 and iy >= 0)
+			map_.cells_[ix][iy] = false;
+			*/
+
+		bool *c = map_.posToCell(lx, ly);
+		if(c != NULL)
+			*c = true;
+
+		ROS_INFO("laser: %f, %f, %d, %d", lx, ly, ix, iy);
+	}
+
+	for(int y=0;y<map_.height_;y++){
+		for(int x=0;x<map_.width_;x++)
+			putchar( map_.cells_[x][y] ? '*' : ' ');
+		putchar('\n');
+	}
+	cout << endl;
+
+	scan_.processed_seq_ = scan_.seq_;
 }
 
 void ParticleFilter::updateOdom(double x, double y, double t)
@@ -204,20 +280,24 @@ double ParticleFilter::normalizeAngle(double t)
 	return t;
 }
 
-void ParticleFilter::setScan(int seq, const vector<float> *scan)
+void ParticleFilter::setScan(const sensor_msgs::LaserScan::ConstPtr &msg)
 {
-	if(scan->size() != scan_ranges_.size()){
-		scan_ranges_.resize(scan->size());
+	if(msg->ranges.size() != scan_.ranges_.size()){
+		scan_.ranges_.resize(msg->ranges.size());
 	}
 
-	scan_seq_ = seq;
-	for(int i=0; i<scan->size(); i++)
-		scan_ranges_[i] = scan->at(i);
+	scan_.seq_ = msg->header.seq;
+	for(int i=0; i<msg->ranges.size(); i++)
+		scan_.ranges_[i] = msg->ranges[i];
 
-/*
-	cout << scan_seq_ << endl;
-	for(int i=0; i<scan_ranges_.size(); i++)
-		cout << scan_ranges_[i] << " ";
+	scan_.angle_min_ = msg->angle_min;
+	scan_.angle_max_ = msg->angle_max;
+	scan_.angle_increment_ = msg->angle_increment;
+
+	/*
+	cout << scan_.seq_ << endl;
+	for(int i=0; i<scan_.ranges_.size(); i++)
+		cout << scan_.ranges_[i] << " ";
 
 	cout << endl;
 	*/

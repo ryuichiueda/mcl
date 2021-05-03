@@ -6,6 +6,7 @@
 #include <random>
 
 #include "nav_msgs/OccupancyGrid.h"
+#include "sensor_msgs/LaserScan.h"
 using namespace std;
 
 class Pose
@@ -75,8 +76,28 @@ class OccupancyGridMap
 public: 
 	OccupancyGridMap(const nav_msgs::OccupancyGrid &map);
 	~OccupancyGridMap();
-private: 
+
+	//cellToPos(int x, int y);
+	bool *posToCell(double x, double y);
+	int posToCellX(double x);
+	int posToCellY(double y);
+
 	vector<bool *> cells_;
+	int width_;
+	int height_;
+
+	double resolution_;
+};
+
+class Scan
+{
+public: 
+	int seq_;
+	int processed_seq_;
+	double angle_max_;
+	double angle_min_;
+	double angle_increment_;
+	vector<double> ranges_;
 };
 
 class ParticleFilter
@@ -94,14 +115,17 @@ public:
 			double &x_var, double &y_var, double &t_var,
 			double &xy_cov, double &yt_cov, double &tx_cov);
 
-	void setScan(int seq, const vector<float> *scan);
+	void setScan(const sensor_msgs::LaserScan::ConstPtr &msg);
 private:
 	Pose *last_odom_;
 	Pose *prev_odom_;
 
+	/*
 	int scan_seq_;
 	int processed_scan_seq_;
 	vector<double> scan_ranges_;
+	*/
+	Scan scan_;
 
 	double normalizeAngle(double t);
 
