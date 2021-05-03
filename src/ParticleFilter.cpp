@@ -1,44 +1,14 @@
-#include "mcl/pf.h"
+#include "mcl/ParticleFilter.h"
 #include <ros/ros.h>
 #include <iostream>
 #include <stdlib.h>
 #include <cmath>
 using namespace std;
 
-OdomError::OdomError(double ff, double fr, double rf, double rr) 
-	: std_norm_dist_(0.0, 1.0), fw_dev_(0.0), rot_dev_(0.0), engine_(seed_gen_())
-{
-	fw_var_per_fw_ = ff*ff;
-	fw_var_per_rot_ = fr*fr;
-	rot_var_per_fw_ = rf*rf;
-	rot_var_per_rot_ = rr*rr;
-}
-
-void OdomError::setDev(double length, double angle)
-{
-	fw_dev_ = sqrt( fabs(length)*fw_var_per_fw_ + fabs(angle)*fw_var_per_rot_ );
-	rot_dev_ = sqrt( fabs(length)*rot_var_per_fw_ + fabs(angle)*rot_var_per_rot_ );
-}
-
-double OdomError::drawFwNoise(void)
-{
-	return std_norm_dist_(engine_) * fw_dev_;
-}
-
-double OdomError::drawRotNoise(void)
-{
-	return std_norm_dist_(engine_) * rot_dev_;
-}
-
-Particle::Particle(double x, double y, double t, double w) : p_(x, y, t)
-{
-	w_ = w;
-}
-
 ParticleFilter::ParticleFilter(double x, double y, double t, int num, 
 				double ff, double fr, double rf, double rr,
 				const nav_msgs::OccupancyGrid &map) 
-	: odom_error_(ff, fr, rf, rr), last_odom_(NULL), prev_odom_(NULL), map_(map)
+	: odom_model_(ff, fr, rf, rr), last_odom_(NULL), prev_odom_(NULL), map_(map)
 {
 	if(num <= 0)
 		ROS_ERROR("NO PARTICLE");
@@ -54,22 +24,6 @@ ParticleFilter::~ParticleFilter()
 {
 	delete last_odom_;
 	delete prev_odom_;
-}
-
-double Particle::likelihood(LikelihoodFieldMap &map, const Scan &scan)
-{
-	double ans = 0.0;
-	for(int i=0;i<scan.ranges_.size();i++){
-		if(isinf(scan.ranges_[i]))
-			continue;
-
-		double ang = scan.angle_min_ + i*scan.angle_increment_;
-		double lx = p_.x_ + scan.ranges_[i] * cos(ang + p_.t_);
-		double ly = p_.y_ + scan.ranges_[i] * sin(ang + p_.t_);
-
-		ans += map.likelihood(lx, ly);
-	}
-	return ans;
 }
 
 void ParticleFilter::resampling(void)
@@ -156,6 +110,7 @@ void ParticleFilter::updateOdom(double x, double y, double t)
 	if(last_odom_ == NULL){
 		last_odom_ = new Pose(x, y, t);
 		prev_odom_ = new Pose(x, y, t);
+		return;
 	}else
 		last_odom_->set(x, y, t);
 
@@ -169,12 +124,12 @@ void ParticleFilter::updateOdom(double x, double y, double t)
 	double fw_length = sqrt(dx*dx + dy*dy);
 	double fw_direction = normalizeAngle((fw_length > 0.000001 ? atan2(dy, dx) : 0.0) - prev_odom_->t_);
 
-	odom_error_.setDev(fw_length, dt);
+	odom_model_.setDev(fw_length, dt);
 
 	for(auto &p : particles_){
-		double rot_noise = odom_error_.drawRotNoise();
+		double rot_noise = odom_model_.drawRotNoise();
 
-		double fw_length_e = fw_length + odom_error_.drawRotNoise();
+		double fw_length_e = fw_length + odom_model_.drawRotNoise();
 		double ang_e = fw_direction + p.p_.t_ + rot_noise;
 		double dt_e = dt + rot_noise;
 

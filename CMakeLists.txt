@@ -117,7 +117,9 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS} )
 
 ## Declare a C++ library
-add_library(pf src/pf.cpp)
+add_library(ParticleFilter src/ParticleFilter.cpp)
+add_library(Particle src/Particle.cpp)
+add_library(OdomModel src/OdomModel.cpp)
 add_library(LikelihoodFieldMap src/LikelihoodFieldMap.cpp)
 
 ## Add cmake target dependencies of the library
@@ -142,7 +144,12 @@ add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catk
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}_node pf LikelihoodFieldMap ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_node
+	ParticleFilter
+	Particle
+	OdomModel
+	LikelihoodFieldMap
+	${catkin_LIBRARIES})
 
 #############
 ## Install ##

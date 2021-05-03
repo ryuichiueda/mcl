@@ -11,7 +11,7 @@
 #define INTERFACE_H__
 
 #include <ros/ros.h>
-#include "mcl/pf.h"
+#include "mcl/ParticleFilter.h"
 
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
