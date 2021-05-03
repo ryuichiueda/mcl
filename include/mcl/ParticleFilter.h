@@ -30,8 +30,8 @@ public:
 	~ParticleFilter();
 
 	vector<Particle> particles_;
-	void updateSensor(void);
-	void updateOdom(double x, double y, double t);
+	void sensorUpdate(void);
+	void motionUpdate(double x, double y, double t);
 
 	void setScan(const sensor_msgs::LaserScan::ConstPtr &msg);
 	void meanPose(double &x_mean, double &y_mean, double &t_mean,

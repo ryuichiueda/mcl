@@ -75,7 +75,7 @@ void ParticleFilter::resampling(void)
 	}
 }
 
-void ParticleFilter::updateSensor(void)
+void ParticleFilter::sensorUpdate(void)
 {
 	if(scan_.processed_seq_ == scan_.seq_)
 		return;
@@ -100,7 +100,7 @@ void ParticleFilter::updateSensor(void)
 	scan_.processed_seq_ = scan_.seq_;
 }
 
-void ParticleFilter::updateOdom(double x, double y, double t)
+void ParticleFilter::motionUpdate(double x, double y, double t)
 {
 	if(last_odom_ == NULL){
 		last_odom_ = new Pose(x, y, t);

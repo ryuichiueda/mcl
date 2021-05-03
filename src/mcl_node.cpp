@@ -101,8 +101,8 @@ void MclNode::loop(void)
 		ROS_INFO("can't get odometry info");
 		return;
 	}
-	pf_->updateOdom(x, y, t);
-	pf_->updateSensor();
+	pf_->motionUpdate(x, y, t);
+	pf_->sensorUpdate();
 
 	double x_var, y_var, t_var, xy_cov, yt_cov, tx_cov;
 	pf_->meanPose(x, y, t, x_var, y_var, t_var, xy_cov, yt_cov, tx_cov);
