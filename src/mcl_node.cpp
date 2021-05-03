@@ -1,9 +1,8 @@
 /*
- *  Copyright (c) 2008, Willow Garage, Inc.
  *  Copyright (c) 2021, Ryuichi Ueda
  *
  *  All rights reserved.
- *  Some parts are derived from https://github.com/ros-planning/navigation/tree/noetic-devel/amcl. 
+ *  Some lines are derived from https://github.com/ros-planning/navigation/tree/noetic-devel/amcl. 
  *  So this software is provided under the terms of the GNU Lesser General Public License (LGPL).
  */
 
