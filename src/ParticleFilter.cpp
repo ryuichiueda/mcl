@@ -81,20 +81,10 @@ void ParticleFilter::updateSensor(void)
 	for(auto &p : particles_)
 		p.w_ *= p.likelihood(map_, scan_);
 
-	double sum = 0.0;
-	for(const auto &p : particles_)
-		sum += p.w_;
-
-	if(sum < 0.000000000001){
-		for(auto &p : particles_)
-			p.w_ = 1.0/particles_.size();
-		
-	}else{
-		for(auto &p : particles_)
-			p.w_ /= sum;
-
+	if(normalize())
 		resampling();
-	}
+	else
+		resetWeight();
 
 	scan_.processed_seq_ = scan_.seq_;
 }
@@ -108,29 +98,18 @@ void ParticleFilter::updateOdom(double x, double y, double t)
 	}else
 		last_odom_->set(x, y, t);
 
-	double dx = x - prev_odom_->x_;
-	double dy = y - prev_odom_->y_;
-	double dt = normalizeAngle(t - prev_odom_->t_);
-
-	if(fabs(dx) < 0.001 and fabs(dy) < 0.001 and fabs(dt) < 0.001)
+	Pose d = *last_odom_ - *prev_odom_;
+	if(d.nearlyZero())
 		return;
 
-	double fw_length = sqrt(dx*dx + dy*dy);
-	double fw_direction = normalizeAngle((fw_length > 0.000001 ? atan2(dy, dx) : 0.0) - prev_odom_->t_);
+	double fw_length = sqrt(d.x_*d.x_ + d.y_*d.y_);
+	double fw_direction = normalizeAngle((fw_length > 0.000001 ? atan2(d.y_, d.x_) : 0.0) - prev_odom_->t_);
 
-	odom_model_.setDev(fw_length, dt);
+	odom_model_.setDev(fw_length, d.t_);
 
-	for(auto &p : particles_){
-		double rot_noise = odom_model_.drawRotNoise();
-
-		double fw_length_e = fw_length + odom_model_.drawFwNoise();
-		double ang_e = fw_direction + p.p_.t_ + rot_noise;
-		double dt_e = dt + rot_noise;
-
-		p.p_.x_ += fw_length_e*cos(ang_e);
-		p.p_.y_ += fw_length_e*sin(ang_e);
-		p.p_.t_ = normalizeAngle(p.p_.t_ + dt_e);
-	}
+	for(auto &p : particles_)
+		p.p_.move(fw_length, fw_direction, d.t_,
+			odom_model_.drawFwNoise(), odom_model_.drawRotNoise());
 
 	prev_odom_->set(*last_odom_);
 }
@@ -207,13 +186,25 @@ void ParticleFilter::setScan(const sensor_msgs::LaserScan::ConstPtr &msg)
 	scan_.angle_min_ = msg->angle_min;
 	scan_.angle_max_ = msg->angle_max;
 	scan_.angle_increment_ = msg->angle_increment;
-
-	/*
-	cout << scan_.seq_ << endl;
-	for(int i=0; i<scan_.ranges_.size(); i++)
-		cout << scan_.ranges_[i] << " ";
-
-	cout << endl;
-	*/
 }
 
+bool ParticleFilter::normalize(void)
+{
+	double sum = 0.0;
+	for(const auto &p : particles_)
+		sum += p.w_;
+
+	if(sum < 0.000000000001)
+		return false;
+
+	for(auto &p : particles_)
+		p.w_ /= sum;
+
+	return true;
+}
+
+void ParticleFilter::resetWeight(void)
+{
+	for(auto &p : particles_)
+		p.w_ = 1.0/particles_.size();
+}

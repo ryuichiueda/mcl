@@ -37,6 +37,8 @@ private:
 
 	double normalizeAngle(double t);
 	void resampling(void);
+	bool normalize(void);
+	void resetWeight(void);
 
 	OdomModel odom_model_;
 	LikelihoodFieldMap map_;

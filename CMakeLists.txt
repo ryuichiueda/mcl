@@ -120,6 +120,7 @@ include_directories(include ${catkin_INCLUDE_DIRS} )
 add_library(ParticleFilter src/ParticleFilter.cpp)
 add_library(Particle src/Particle.cpp)
 add_library(OdomModel src/OdomModel.cpp)
+add_library(Pose src/Pose.cpp)
 add_library(LikelihoodFieldMap src/LikelihoodFieldMap.cpp)
 
 ## Add cmake target dependencies of the library
@@ -147,6 +148,7 @@ add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catk
 target_link_libraries(${PROJECT_NAME}_node
 	ParticleFilter
 	Particle
+	Pose
 	OdomModel
 	LikelihoodFieldMap
 	${catkin_LIBRARIES})

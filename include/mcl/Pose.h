@@ -8,31 +8,19 @@ using namespace std;
 class Pose
 {
 public:
-	Pose(double x, double y, double t)
-	{
-		set(x, y, t);
-	}
+	Pose(double x, double y, double t);
 
-	void set(double x, double y, double t)
-	{
-		x_ = x;
-		y_ = y;
-		t_ = t;
-	}
+	void set(double x, double y, double t);
+	void set(const Pose &p);
+	string to_s(void);
 
-	void set(const Pose &p)
-	{
-		x_ = p.x_;
-		y_ = p.y_;
-		t_ = p.t_;
-	}
+	void normalizeAngle(void);
+	void move(double length, double direction, double rotation,
+		  double fw_noise, double rot_noise);
 
-	string to_s(void)
-	{
-		stringstream s;
-		s << "x:" << x_ << "\ty:" << y_ << "\tt:" << t_;
-		return s.str();
-	}
+	Pose operator -(const Pose &p) const;
+
+	bool nearlyZero(void);
 
 	double x_, y_, t_;
 };
