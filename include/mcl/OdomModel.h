@@ -1,3 +1,11 @@
+/*
+ *  Copyright (c) 2021, Ryuichi Ueda
+ *
+ *  All rights reserved.
+ *  Some lines are derived from https://github.com/ros-planning/navigation/tree/noetic-devel/amcl. 
+ *  So this software is provided under the terms of the GNU Lesser General Public License (LGPL).
+ */
+
 #ifndef ODOM_MODEL_H__
 #define ODOM_MODEL_H__
 
