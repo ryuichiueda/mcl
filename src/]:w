@@ -88,7 +88,6 @@ public:
 	~ParticleFilter();
 
 	vector<Particle> particles_;
-	void updateSensor(void);
 	void updateOdom(double x, double y, double t);
 	void meanPose(double &x_mean, double &y_mean, double &t_mean,
 			double &x_var, double &y_var, double &t_var,

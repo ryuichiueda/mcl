@@ -73,6 +73,7 @@ void MclNode::initPF(void)
 
 void MclNode::cbScan(const sensor_msgs::LaserScan::ConstPtr &msg)
 {
+	pf_->setScan(msg->header.seq, &msg->ranges);
 }
 
 void MclNode::loop(void)
@@ -83,6 +84,7 @@ void MclNode::loop(void)
 		return;
 	}
 	pf_->updateOdom(x, y, t);
+	pf_->updateSensor();
 
 	double x_var, y_var, t_var, xy_cov, yt_cov, tx_cov;
 	pf_->meanPose(x, y, t, x_var, y_var, t_var, xy_cov, yt_cov, tx_cov);

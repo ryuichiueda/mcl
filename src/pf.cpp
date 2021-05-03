@@ -75,12 +75,39 @@ ParticleFilter::ParticleFilter(double x, double y, double t, int num,
 	Particle p(x, y, t, 1.0/num);
 	for(int i=0; i<num; i++)
 		particles_.push_back(p);
+
+	processed_scan_seq_ = -1;
 }
 
 ParticleFilter::~ParticleFilter()
 {
 	delete last_odom_;
 	delete prev_odom_;
+}
+
+void ParticleFilter::updateSensor(void)
+{
+	if(processed_scan_seq_ == scan_seq_){
+		ROS_INFO("SKIP");
+		return;
+	}
+
+	vector<double> ranges;
+	int seq = -1;
+	while(seq != scan_seq_){
+		seq = scan_seq_;
+		ranges.clear();
+		copy(scan_ranges_.begin(), scan_ranges_.end(), back_inserter(ranges) );
+	}
+
+	/*
+	for(int i=0;i<scan.size();i++)
+		cout << scan[i] << " ";
+		*/
+
+	cout << "-----------------------" << endl;
+
+	processed_scan_seq_ = scan_seq_;
 }
 
 void ParticleFilter::updateOdom(double x, double y, double t)
@@ -176,3 +203,23 @@ double ParticleFilter::normalizeAngle(double t)
 
 	return t;
 }
+
+void ParticleFilter::setScan(int seq, const vector<float> *scan)
+{
+	if(scan->size() != scan_ranges_.size()){
+		scan_ranges_.resize(scan->size());
+	}
+
+	scan_seq_ = seq;
+	for(int i=0; i<scan->size(); i++)
+		scan_ranges_[i] = scan->at(i);
+
+/*
+	cout << scan_seq_ << endl;
+	for(int i=0; i<scan_ranges_.size(); i++)
+		cout << scan_ranges_[i] << " ";
+
+	cout << endl;
+	*/
+}
+
