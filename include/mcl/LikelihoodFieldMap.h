@@ -5,22 +5,15 @@
 #include "mcl/Scan.h"
 #include "nav_msgs/OccupancyGrid.h"
 
-class OccupancyGridMap
+class LikelihoodFieldMap
 {
 public: 
-	OccupancyGridMap(const nav_msgs::OccupancyGrid &map);
-	~OccupancyGridMap();
-
-	//cellToPos(int x, int y);
-	bool *posToCell(double x, double y);
-	int posToCellX(double x);
-	int posToCellY(double y);
-
-	double likelihood(double x, double y);
+	LikelihoodFieldMap(const nav_msgs::OccupancyGrid &map);
+	~LikelihoodFieldMap();
 
 	void setLikelihood(int x, int y);
+	double likelihood(double x, double y);
 
-	std::vector<bool *> cells_;
 	std::vector<double *> likelihoods_;
 	int width_;
 	int height_;

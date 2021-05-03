@@ -70,11 +70,11 @@ private:
 	std::default_random_engine engine_;
 };
 
-class OccupancyGridMap
+class LikelihoodFieldMap
 {
 public: 
-	OccupancyGridMap(const nav_msgs::OccupancyGrid &map);
-	~OccupancyGridMap();
+	LikelihoodFieldMap(const nav_msgs::OccupancyGrid &map);
+	~LikelihoodFieldMap();
 private: 
 	vector<bool *> cells_;
 };
@@ -106,7 +106,7 @@ private:
 
 	OdomError odom_error_;
 
-	OccupancyGridMap map_;
+	LikelihoodFieldMap map_;
 };
 
 #endif

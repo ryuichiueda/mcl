@@ -7,7 +7,7 @@
 
 #include "nav_msgs/OccupancyGrid.h"
 #include "sensor_msgs/LaserScan.h"
-#include "mcl/OccupancyGridMap.h"
+#include "mcl/LikelihoodFieldMap.h"
 using namespace std;
 
 class Pose
@@ -47,7 +47,7 @@ class Particle
 public:
 	Particle(double x, double y, double t, double w);
 
-	double likelihood(OccupancyGridMap &map, const Scan &scan);
+	double likelihood(LikelihoodFieldMap &map, const Scan &scan);
 	Pose p_;
 	double w_;
 };
@@ -75,11 +75,11 @@ private:
 };
 
 /*
-class OccupancyGridMap
+class LikelihoodFieldMap
 {
 public: 
-	OccupancyGridMap(const nav_msgs::OccupancyGrid &map);
-	~OccupancyGridMap();
+	LikelihoodFieldMap(const nav_msgs::OccupancyGrid &map);
+	~LikelihoodFieldMap();
 
 	//cellToPos(int x, int y);
 	bool *posToCell(double x, double y);
@@ -139,7 +139,7 @@ private:
 
 	OdomError odom_error_;
 
-	OccupancyGridMap map_;
+	LikelihoodFieldMap map_;
 };
 
 #endif

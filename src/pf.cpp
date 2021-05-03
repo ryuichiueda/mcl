@@ -56,7 +56,7 @@ ParticleFilter::~ParticleFilter()
 	delete prev_odom_;
 }
 
-double Particle::likelihood(OccupancyGridMap &map, const Scan &scan)
+double Particle::likelihood(LikelihoodFieldMap &map, const Scan &scan)
 {
 	double ans = 0.0;
 	for(int i=0;i<scan.ranges_.size();i++){
