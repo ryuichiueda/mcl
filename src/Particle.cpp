@@ -1,7 +1,4 @@
 #include "mcl/Particle.h"
-#include <ros/ros.h>
-#include <iostream>
-#include <stdlib.h>
 #include <cmath>
 using namespace std;
 

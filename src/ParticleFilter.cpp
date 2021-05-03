@@ -66,10 +66,8 @@ void ParticleFilter::resampling(void)
 
 void ParticleFilter::updateSensor(void)
 {
-	if(scan_.processed_seq_ == scan_.seq_){
-		ROS_INFO("SKIP");
+	if(scan_.processed_seq_ == scan_.seq_)
 		return;
-	}
 
 	vector<double> ranges;
 	int seq = -1;
@@ -80,27 +78,23 @@ void ParticleFilter::updateSensor(void)
 		copy(scan_.ranges_.begin(), scan_.ranges_.end(), back_inserter(ranges) );
 	}
 
-	for(auto &p : particles_){
+	for(auto &p : particles_)
 		p.w_ *= p.likelihood(map_, scan_);
-	}
 
 	double sum = 0.0;
-	for(const auto &p : particles_){
+	for(const auto &p : particles_)
 		sum += p.w_;
-	}
 
 	if(sum < 0.000000000001){
-		for(auto &p : particles_){
+		for(auto &p : particles_)
 			p.w_ = 1.0/particles_.size();
-		}
 		
 	}else{
-		for(auto &p : particles_){
+		for(auto &p : particles_)
 			p.w_ /= sum;
-		}
+
 		resampling();
 	}
-
 
 	scan_.processed_seq_ = scan_.seq_;
 }
@@ -129,7 +123,7 @@ void ParticleFilter::updateOdom(double x, double y, double t)
 	for(auto &p : particles_){
 		double rot_noise = odom_model_.drawRotNoise();
 
-		double fw_length_e = fw_length + odom_model_.drawRotNoise();
+		double fw_length_e = fw_length + odom_model_.drawFwNoise();
 		double ang_e = fw_direction + p.p_.t_ + rot_noise;
 		double dt_e = dt + rot_noise;
 
