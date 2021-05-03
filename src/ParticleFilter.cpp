@@ -103,7 +103,7 @@ void ParticleFilter::updateOdom(double x, double y, double t)
 		return;
 
 	double fw_length = sqrt(d.x_*d.x_ + d.y_*d.y_);
-	double fw_direction = normalizeAngle((fw_length > 0.000001 ? atan2(d.y_, d.x_) : 0.0) - prev_odom_->t_);
+	double fw_direction = atan2(d.y_, d.x_) - prev_odom_->t_;
 
 	odom_model_.setDev(fw_length, d.t_);
 
