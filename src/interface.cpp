@@ -153,6 +153,7 @@ void MclNode::publishParticles(void)
 		cloud_msg.poses[i].position.x = pf_->particles_[i].p_.x_;
 		cloud_msg.poses[i].position.y = pf_->particles_[i].p_.y_;
 		cloud_msg.poses[i].position.z = 0; 
+
 		tf2::Quaternion q;
 		q.setRPY(0, 0, pf_->particles_[i].p_.t_);
 		tf2::convert(q, cloud_msg.poses[i].orientation);

@@ -5,77 +5,6 @@
 #include <cmath>
 using namespace std;
 
-
-OccupancyGridMap::OccupancyGridMap(const nav_msgs::OccupancyGrid &map)
-{
-/*	ROS_INFO("Received a %d X %d map @ %.3f m/pix\n",
-		resp.map.info.width, resp.map.info.height, resp.map.info.resolution);
-		*/
-
-	width_ = map.info.width;
-	height_ = map.info.height;
-	origin_x_ = map.info.origin.position.x;
-	origin_y_ = map.info.origin.position.y;
-
-	resolution_ = map.info.resolution;
-
-	for(int x=0; x<width_; x++){
-		cells_.push_back(new bool[height_]);
-		for(int y=0; y<height_; y++){
-			cells_[x][y] = map.data[x + y*width_] > 50;
-		}
-	}
-
-	/*
-	for(int y=0; y<map.info.height; y++){
-		for(int x=0; x<map.info.width; x++){
-			putchar(cells_[x][y] ? '*' : ' ');
-		}
-		putchar('\n');
-	}
-	*/
-}
-
-
-OccupancyGridMap::~OccupancyGridMap()
-{
-	for(auto &c : cells_)
-		delete c;
-}
-
-bool *OccupancyGridMap::posToCell(double x, double y)
-{
-	int ix = (int)floor((x - origin_x_)/resolution_);
-	int iy = (int)floor((y - origin_y_)/resolution_);
-
-	if(ix < 0 or iy < 0)
-		return NULL;
-	if(ix >= width_ or iy >= height_)
-		return NULL;
-
-	return &cells_[ix][iy];
-}
-
-int OccupancyGridMap::posToCellX(double x)
-{
-	int ix = (int)floor((x - origin_x_)/resolution_);
-
-	if(ix < 0 or ix >= width_)
-		return -1;
-
-	return ix;
-}
-
-int OccupancyGridMap::posToCellY(double y)
-{
-	int iy = (int)floor((y - origin_y_)/resolution_);
-
-	if(iy < 0 or iy >= height_)
-		return -1;
-
-	return iy;
-}
-
 OdomError::OdomError(double ff, double fr, double rf, double rr) 
 	: std_norm_dist_(0.0, 1.0), fw_dev_(0.0), rot_dev_(0.0), engine_(seed_gen_())
 {
@@ -127,6 +56,60 @@ ParticleFilter::~ParticleFilter()
 	delete prev_odom_;
 }
 
+double Particle::likelihood(OccupancyGridMap &map, const Scan &scan)
+{
+	double ans = 0.0;
+	for(int i=0;i<scan.ranges_.size();i++){
+		if(isinf(scan.ranges_[i]))
+			continue;
+
+		double ang = scan.angle_min_ + i*scan.angle_increment_;
+		double lx = p_.x_ + scan.ranges_[i] * cos(ang + p_.t_);
+		double ly = p_.y_ + scan.ranges_[i] * sin(ang + p_.t_);
+
+		ans += map.likelihood(lx, ly);
+	}
+	return ans;
+}
+
+void ParticleFilter::resampling(void)
+{
+	vector<double> accum;
+	accum.push_back(particles_[0].w_);
+	for(int i=1;i<particles_.size();i++){
+		accum.push_back(accum.back() + particles_[i].w_);
+	}
+
+	vector<Particle> old;
+	for(auto p : particles_){
+		old.push_back(p);
+	}
+
+	double start = (double)rand()/(RAND_MAX * particles_.size());
+	double step = 1.0/particles_.size();
+
+	vector<int> chosen;
+
+	int tick = 0;
+	for(int i=0; i<particles_.size(); i++){
+		while(accum[tick] <= start + i*step){
+			tick++;
+			if(tick == particles_.size()){
+				ROS_ERROR("RESAMPLING FAILED");
+				exit(1);
+			}	
+		}	
+		chosen.push_back(tick);
+	}
+
+	for(int i=0; i<particles_.size(); i++){
+		particles_[i].p_.x_ = old[chosen[i]].p_.x_;
+		particles_[i].p_.y_ = old[chosen[i]].p_.y_;
+		particles_[i].p_.t_ = old[chosen[i]].p_.t_;
+		particles_[i].w_ = old[chosen[i]].w_;
+	}
+}
+
 void ParticleFilter::updateSensor(void)
 {
 	if(scan_.processed_seq_ == scan_.seq_){
@@ -143,44 +126,27 @@ void ParticleFilter::updateSensor(void)
 		copy(scan_.ranges_.begin(), scan_.ranges_.end(), back_inserter(ranges) );
 	}
 
-	/* change weight */
-	vector<bool *> cells_;
-	int r = (int)floor((double)particles_.size()*rand()/RAND_MAX);
-	double px = particles_[r].p_.x_;
-	double py = particles_[r].p_.y_;
-	double pt = particles_[r].p_.t_;
-
-	for(int i=0;i<scan_.ranges_.size();i++){
-		if(isinf(scan_.ranges_[i]))
-			continue;
-
-		double ang = scan_.angle_min_ + i*scan_.angle_increment_;
-		double lx = px + scan_.ranges_[i] * cos(ang + pt);
-		double ly = py + scan_.ranges_[i] * sin(ang + pt);
-
-		int ix = map_.posToCellX(lx);
-		int iy = map_.posToCellY(ly);
-
-		/*
-		if(ix >= 0 and iy >= 0)
-			map_.cells_[ix][iy] = false;
-			*/
-
-		bool *c = map_.posToCell(lx, ly);
-		if(c != NULL)
-			*c = true;
-
-	//	ROS_INFO("laser: %f, %f, %d, %d", lx, ly, ix, iy);
+	for(auto &p : particles_){
+		p.w_ *= p.likelihood(map_, scan_);
 	}
 
-	/*
-	for(int y=0;y<map_.height_;y++){
-		for(int x=0;x<map_.width_;x++)
-			putchar( map_.cells_[x][y] ? '*' : ' ');
-		putchar('\n');
+	double sum = 0.0;
+	for(const auto &p : particles_){
+		sum += p.w_;
 	}
-	cout << endl;
-	*/
+
+	if(sum < 0.000000000001){
+		for(auto &p : particles_){
+			p.w_ = 1.0/particles_.size();
+		}
+		
+	}else{
+		for(auto &p : particles_){
+			p.w_ /= sum;
+		}
+		resampling();
+	}
+
 
 	scan_.processed_seq_ = scan_.seq_;
 }

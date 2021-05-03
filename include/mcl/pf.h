@@ -7,6 +7,7 @@
 
 #include "nav_msgs/OccupancyGrid.h"
 #include "sensor_msgs/LaserScan.h"
+#include "mcl/OccupancyGridMap.h"
 using namespace std;
 
 class Pose
@@ -45,6 +46,8 @@ class Particle
 {
 public:
 	Particle(double x, double y, double t, double w);
+
+	double likelihood(OccupancyGridMap &map, const Scan &scan);
 	Pose p_;
 	double w_;
 };
@@ -71,6 +74,7 @@ private:
 	std::default_random_engine engine_;
 };
 
+/*
 class OccupancyGridMap
 {
 public: 
@@ -82,7 +86,12 @@ public:
 	int posToCellX(double x);
 	int posToCellY(double y);
 
+	double likelihood(double x, double y);
+
+	void setLikelihood(int x, int y);
+
 	vector<bool *> cells_;
+	vector<double *> likelihoods_;
 	int width_;
 	int height_;
 
@@ -101,6 +110,7 @@ public:
 	double angle_increment_;
 	vector<double> ranges_;
 };
+*/
 
 class ParticleFilter
 {
@@ -122,14 +132,10 @@ private:
 	Pose *last_odom_;
 	Pose *prev_odom_;
 
-	/*
-	int scan_seq_;
-	int processed_scan_seq_;
-	vector<double> scan_ranges_;
-	*/
 	Scan scan_;
 
 	double normalizeAngle(double t);
+	void resampling(void);
 
 	OdomError odom_error_;
 
