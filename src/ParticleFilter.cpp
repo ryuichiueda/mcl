@@ -7,10 +7,11 @@ using namespace std;
 
 ParticleFilter::ParticleFilter(double x, double y, double t, int num, 
 				const shared_ptr<OdomModel> &odom_model,
-				const LikelihoodFieldMap &map) 
-	: last_odom_(NULL), prev_odom_(NULL), map_(map)
+				const shared_ptr<LikelihoodFieldMap> &map)
+	: last_odom_(NULL), prev_odom_(NULL)
 {
 	odom_model_ = move(odom_model);
+	map_ = move(map);
 
 	if(num <= 0)
 		ROS_ERROR("NO PARTICLE");
@@ -81,7 +82,7 @@ void ParticleFilter::updateSensor(void)
 	}
 
 	for(auto &p : particles_)
-		p.w_ *= p.likelihood(map_, scan_);
+		p.w_ *= p.likelihood(map_.get(), scan_);
 
 	if(normalize())
 		resampling();

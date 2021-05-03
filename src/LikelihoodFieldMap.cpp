@@ -23,24 +23,6 @@ LikelihoodFieldMap::LikelihoodFieldMap(const nav_msgs::OccupancyGrid &map)
 				setLikelihood(x, y);
 }
 
-LikelihoodFieldMap::LikelihoodFieldMap(const LikelihoodFieldMap &map)
-{
-	width_ = map.width_;
-	height_ = map.height_;
-
-	origin_x_ = map.origin_x_;
-	origin_y_ = map.origin_x_;
-
-	resolution_ = map.resolution_;
-
-	for(int x=0; x<width_; x++){
-		likelihoods_.push_back(new double[height_]);
-
-		for(int y=0; y<height_; y++)
-			likelihoods_[x][y] = map.likelihoods_[x][y];
-	}
-}
-
 LikelihoodFieldMap::~LikelihoodFieldMap()
 {
 	for(auto &c : likelihoods_)
