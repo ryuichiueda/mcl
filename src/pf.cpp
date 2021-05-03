@@ -14,6 +14,8 @@ OccupancyGridMap::OccupancyGridMap(const nav_msgs::OccupancyGrid &map)
 
 	width_ = map.info.width;
 	height_ = map.info.height;
+	origin_x_ = map.info.origin.position.x;
+	origin_y_ = map.info.origin.position.y;
 
 	resolution_ = map.info.resolution;
 
@@ -43,11 +45,8 @@ OccupancyGridMap::~OccupancyGridMap()
 
 bool *OccupancyGridMap::posToCell(double x, double y)
 {
-	double shift_x = x + resolution_*width_/2;
-	double shift_y = y + resolution_*height_/2;
-
-	int ix = (int)floor(shift_x/resolution_);
-	int iy = (int)floor(shift_y/resolution_);
+	int ix = (int)floor((x - origin_x_)/resolution_);
+	int iy = (int)floor((y - origin_y_)/resolution_);
 
 	if(ix < 0 or iy < 0)
 		return NULL;
@@ -59,8 +58,7 @@ bool *OccupancyGridMap::posToCell(double x, double y)
 
 int OccupancyGridMap::posToCellX(double x)
 {
-	double shift_x = x + resolution_*width_/2;
-	int ix = (int)floor(shift_x/resolution_);
+	int ix = (int)floor((x - origin_x_)/resolution_);
 
 	if(ix < 0 or ix >= width_)
 		return -1;
@@ -70,8 +68,7 @@ int OccupancyGridMap::posToCellX(double x)
 
 int OccupancyGridMap::posToCellY(double y)
 {
-	double shift_y = y + resolution_*height_/2;
-	int iy = (int)floor(shift_y/resolution_);
+	int iy = (int)floor((y - origin_y_)/resolution_);
 
 	if(iy < 0 or iy >= height_)
 		return -1;
@@ -173,15 +170,17 @@ void ParticleFilter::updateSensor(void)
 		if(c != NULL)
 			*c = true;
 
-		ROS_INFO("laser: %f, %f, %d, %d", lx, ly, ix, iy);
+	//	ROS_INFO("laser: %f, %f, %d, %d", lx, ly, ix, iy);
 	}
 
+	/*
 	for(int y=0;y<map_.height_;y++){
 		for(int x=0;x<map_.width_;x++)
 			putchar( map_.cells_[x][y] ? '*' : ' ');
 		putchar('\n');
 	}
 	cout << endl;
+	*/
 
 	scan_.processed_seq_ = scan_.seq_;
 }

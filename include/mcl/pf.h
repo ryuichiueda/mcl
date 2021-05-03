@@ -87,6 +87,8 @@ public:
 	int height_;
 
 	double resolution_;
+	double origin_x_;
+	double origin_y_;
 };
 
 class Scan
