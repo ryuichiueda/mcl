@@ -55,19 +55,19 @@ void MclNode::initPF(void)
 	private_nh_.param("num_particles", num, 0);
 
 	LikelihoodFieldMap map = initMap();
-	OdomModel om = initOdometry();
+	shared_ptr<OdomModel> om = move(initOdometry());
 
 	pf_.reset(new ParticleFilter(x, y, t, num, om, map));
 }
 
-OdomModel MclNode::initOdometry(void)
+shared_ptr<OdomModel> MclNode::initOdometry(void)
 {
 	double ff, fr, rf, rr;
 	private_nh_.param("odom_fw_dev_per_fw", ff, 0.0);
 	private_nh_.param("odom_fw_dev_per_rot", fr, 0.0);
 	private_nh_.param("odom_rot_dev_per_fw", rf, 0.0);
 	private_nh_.param("odom_rot_dev_per_rot", rr, 0.0);
-	return OdomModel(ff, fr, rf, rr);
+	return shared_ptr<OdomModel>(new OdomModel(ff, fr, rf, rr));
 }
 
 LikelihoodFieldMap MclNode::initMap(void)

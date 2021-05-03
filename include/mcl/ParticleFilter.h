@@ -17,7 +17,7 @@ class ParticleFilter
 {
 public: 
 	ParticleFilter(double x, double y, double t, int num,
-			const OdomModel &odom_model,
+			const shared_ptr<OdomModel> &odom_model,
 			const LikelihoodFieldMap &map);
 	~ParticleFilter();
 
@@ -40,7 +40,7 @@ private:
 	bool normalize(void);
 	void resetWeight(void);
 
-	OdomModel odom_model_;
+	shared_ptr<OdomModel> odom_model_;
 	LikelihoodFieldMap map_;
 };
 

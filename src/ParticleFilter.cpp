@@ -6,10 +6,12 @@
 using namespace std;
 
 ParticleFilter::ParticleFilter(double x, double y, double t, int num, 
-				const OdomModel &odom_model,
+				const shared_ptr<OdomModel> &odom_model,
 				const LikelihoodFieldMap &map) 
-	: odom_model_(odom_model), last_odom_(NULL), prev_odom_(NULL), map_(map)
+	: last_odom_(NULL), prev_odom_(NULL), map_(map)
 {
+	odom_model_ = move(odom_model);
+
 	if(num <= 0)
 		ROS_ERROR("NO PARTICLE");
 
@@ -105,11 +107,11 @@ void ParticleFilter::updateOdom(double x, double y, double t)
 	double fw_length = sqrt(d.x_*d.x_ + d.y_*d.y_);
 	double fw_direction = atan2(d.y_, d.x_) - prev_odom_->t_;
 
-	odom_model_.setDev(fw_length, d.t_);
+	odom_model_->setDev(fw_length, d.t_);
 
 	for(auto &p : particles_)
 		p.p_.move(fw_length, fw_direction, d.t_,
-			odom_model_.drawFwNoise(), odom_model_.drawRotNoise());
+			odom_model_->drawFwNoise(), odom_model_->drawRotNoise());
 
 	prev_odom_->set(*last_odom_);
 }

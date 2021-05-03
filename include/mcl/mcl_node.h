@@ -58,7 +58,7 @@ private:
 	void initPF(void);
 	void initTopic(void);
 	LikelihoodFieldMap initMap(void);
-	OdomModel initOdometry(void);
+	shared_ptr<OdomModel> initOdometry(void);
 
 	void cbScan(const sensor_msgs::LaserScan::ConstPtr &msg);
 };
