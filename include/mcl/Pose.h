@@ -27,6 +27,7 @@ public:
 		  double fw_noise, double rot_noise);
 
 	Pose operator -(const Pose &p) const;
+	Pose operator =(const Pose &p);
 
 	bool nearlyZero(void);
 

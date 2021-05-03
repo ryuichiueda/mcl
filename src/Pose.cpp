@@ -47,10 +47,18 @@ void Pose::normalizeAngle(void)
 
 Pose Pose::operator -(const Pose &p) const
 {
-	Pose ans(this->x_ - p.x_, this->y_ - p.y_, this->t_ - p.t_);
+	Pose ans(x_ - p.x_, y_ - p.y_, t_ - p.t_);
 	ans.normalizeAngle();
 
 	return ans;
+}
+
+Pose Pose::operator =(const Pose &p)
+{
+	x_ = p.x_;
+       	y_ = p.y_;
+	t_ = p.t_;
+	return *this;
 }
 
 void Pose::move(double length, double direction, double rotation,

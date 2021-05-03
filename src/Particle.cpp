@@ -30,3 +30,10 @@ double Particle::likelihood(LikelihoodFieldMap *map, const Scan &scan)
 	}
 	return ans;
 }
+
+Particle Particle::operator =(const Particle &p)
+{
+	p_ = p.p_;
+	w_ = p.w_;
+	return *this;
+}

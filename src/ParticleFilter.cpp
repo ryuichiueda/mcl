@@ -45,10 +45,7 @@ void ParticleFilter::resampling(void)
 		accum.push_back(accum.back() + particles_[i].w_);
 	}
 
-	vector<Particle> old;
-	for(auto p : particles_){
-		old.push_back(p);
-	}
+	vector<Particle> old(particles_);
 
 	double start = (double)rand()/(RAND_MAX * particles_.size());
 	double step = 1.0/particles_.size();
@@ -67,12 +64,8 @@ void ParticleFilter::resampling(void)
 		chosen.push_back(tick);
 	}
 
-	for(int i=0; i<particles_.size(); i++){
-		particles_[i].p_.x_ = old[chosen[i]].p_.x_;
-		particles_[i].p_.y_ = old[chosen[i]].p_.y_;
-		particles_[i].p_.t_ = old[chosen[i]].p_.t_;
-		particles_[i].w_ = old[chosen[i]].w_;
-	}
+	for(int i=0; i<particles_.size(); i++)
+		particles_[i] = old[chosen[i]];
 }
 
 void ParticleFilter::sensorUpdate(void)

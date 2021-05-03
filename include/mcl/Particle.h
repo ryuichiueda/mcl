@@ -21,6 +21,8 @@ public:
 	double likelihood(LikelihoodFieldMap *map, const Scan &scan);
 	Pose p_;
 	double w_;
+
+	Particle operator =(const Particle &p);
 };
 
 #endif
