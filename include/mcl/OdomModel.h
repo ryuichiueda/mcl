@@ -9,6 +9,7 @@ class OdomModel
 {
 public:
 	OdomModel(double ff, double fr, double rf, double rr);
+	OdomModel(const OdomModel &odom_model);
 	void setDev(double length, double angle);
 	double drawFwNoise(void);
 	double drawRotNoise(void);

@@ -17,10 +17,6 @@
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/message_filter.h"
 #include "tf2/LinearMath/Transform.h"
-/*
-#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
-#include "message_filters/subscriber.h"
-*/
 
 #include "sensor_msgs/LaserScan.h"
 
@@ -60,6 +56,9 @@ private:
 
 	void initTF(void);
 	void initPF(void);
+	void initTopic(void);
+	LikelihoodFieldMap initMap(void);
+	OdomModel initOdometry(void);
 
 	void cbScan(const sensor_msgs::LaserScan::ConstPtr &msg);
 };

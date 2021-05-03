@@ -14,6 +14,15 @@ OdomModel::OdomModel(double ff, double fr, double rf, double rr)
 	rot_var_per_rot_ = rr*rr;
 }
 
+OdomModel::OdomModel(const OdomModel &odom_model)
+	: std_norm_dist_(0.0, 1.0), fw_dev_(0.0), rot_dev_(0.0), engine_(seed_gen_())
+{
+	fw_var_per_fw_ = odom_model.fw_var_per_fw_;
+	fw_var_per_rot_ = odom_model.fw_var_per_rot_;
+	rot_var_per_fw_ = odom_model.rot_var_per_fw_;
+	rot_var_per_rot_ = odom_model.rot_var_per_rot_;
+}
+
 void OdomModel::setDev(double length, double angle)
 {
 	fw_dev_ = sqrt( fabs(length)*fw_var_per_fw_ + fabs(angle)*fw_var_per_rot_ );

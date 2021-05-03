@@ -9,6 +9,7 @@ class LikelihoodFieldMap
 {
 public: 
 	LikelihoodFieldMap(const nav_msgs::OccupancyGrid &map);
+	LikelihoodFieldMap(const LikelihoodFieldMap &map);
 	~LikelihoodFieldMap();
 
 	void setLikelihood(int x, int y);

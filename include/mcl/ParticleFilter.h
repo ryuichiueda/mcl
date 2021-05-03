@@ -17,8 +17,8 @@ class ParticleFilter
 {
 public: 
 	ParticleFilter(double x, double y, double t, int num,
-			double ff, double fr, double rf, double rr,
-			const nav_msgs::OccupancyGrid &map);
+			const OdomModel &odom_model,
+			const LikelihoodFieldMap &map);
 	~ParticleFilter();
 
 	vector<Particle> particles_;

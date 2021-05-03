@@ -6,9 +6,9 @@
 using namespace std;
 
 ParticleFilter::ParticleFilter(double x, double y, double t, int num, 
-				double ff, double fr, double rf, double rr,
-				const nav_msgs::OccupancyGrid &map) 
-	: odom_model_(ff, fr, rf, rr), last_odom_(NULL), prev_odom_(NULL), map_(map)
+				const OdomModel &odom_model,
+				const LikelihoodFieldMap &map) 
+	: odom_model_(odom_model), last_odom_(NULL), prev_odom_(NULL), map_(map)
 {
 	if(num <= 0)
 		ROS_ERROR("NO PARTICLE");

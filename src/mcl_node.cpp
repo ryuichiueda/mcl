@@ -19,15 +19,18 @@ MclNode::MclNode() : private_nh_("~")
 {
 	initTF();
 	initPF();
-
-	particlecloud_pub_ = nh_.advertise<geometry_msgs::PoseArray>("particlecloud", 2, true);
-	pose_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("mcl_pose", 2, true);
-
-	laser_scan_sub_ = nh_.subscribe("scan", 2, &MclNode::cbScan, this);
+	initTopic();
 }
 
 MclNode::~MclNode()
 {
+}
+
+void MclNode::initTopic(void)
+{
+	particlecloud_pub_ = nh_.advertise<geometry_msgs::PoseArray>("particlecloud", 2, true);
+	pose_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("mcl_pose", 2, true);
+	laser_scan_sub_ = nh_.subscribe("scan", 2, &MclNode::cbScan, this);
 }
 
 void MclNode::initTF(void)
@@ -48,11 +51,29 @@ void MclNode::initPF(void)
 	private_nh_.param("initial_pose_y", y, 0.0);
 	private_nh_.param("initial_pose_a", t, 0.0);
 
+	int num;
+	private_nh_.param("num_particles", num, 0);
+
+	LikelihoodFieldMap map = initMap();
+	OdomModel om = initOdometry();
+
+	pf_.reset(new ParticleFilter(x, y, t, num, om, map));
+}
+
+OdomModel MclNode::initOdometry(void)
+{
 	double ff, fr, rf, rr;
-	private_nh_.param("odom_fw_dev_per_fw_", ff, 0.0);
-	private_nh_.param("odom_fw_dev_per_rot_", fr, 0.0);
-	private_nh_.param("odom_rot_dev_per_fw_", rf, 0.0);
-	private_nh_.param("odom_rot_dev_per_rot_", rr, 0.0);
+	private_nh_.param("odom_fw_dev_per_fw", ff, 0.0);
+	private_nh_.param("odom_fw_dev_per_rot", fr, 0.0);
+	private_nh_.param("odom_rot_dev_per_fw", rf, 0.0);
+	private_nh_.param("odom_rot_dev_per_rot", rr, 0.0);
+	return OdomModel(ff, fr, rf, rr);
+}
+
+LikelihoodFieldMap MclNode::initMap(void)
+{
+	double likelihood_range;
+	private_nh_.param("laser_likelihood_max_dist", likelihood_range, 0.0);
 
 	int num;
 	private_nh_.param("num_particles", num, 0);
@@ -65,10 +86,8 @@ void MclNode::initPF(void)
 		ros::Duration d(0.5);
 		d.sleep();
 	}
-	ROS_INFO("Received a %d X %d map @ %.3f m/pix\n",
-		resp.map.info.width, resp.map.info.height, resp.map.info.resolution);
 
-	pf_.reset(new ParticleFilter(x, y, t, num, ff, fr, rf, rr, resp.map));
+	return LikelihoodFieldMap(resp.map);
 }
 
 void MclNode::cbScan(const sensor_msgs::LaserScan::ConstPtr &msg)
