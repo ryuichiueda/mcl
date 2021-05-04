@@ -4,7 +4,6 @@ mcl is an alternative Monte Carlo localization (MCL) package to amcl (http://wik
 
 This package is suitable for learning MCL due to its simplicity.
 
-
 ## Nodes
 
 ### mcl_node
@@ -33,7 +32,6 @@ This node transforms laser scans and odometry transform messages to pose estimat
 * static_map ([nav_msgs/GetMap](http://docs.ros.org/en/api/nav_msgs/html/srv/GetMap.html))
     * mcl initializes the map for localization
 
-
 #### Parameters
 
 * ~num_particles (int, default: 1000)
@@ -58,3 +56,9 @@ This node transforms laser scans and odometry transform messages to pose estimat
     * standard deviation of rotational motion noise by forward motion
 * ~laser_likelihood_max_dist (double, default: 0.2 meters)
     * maximum distance to inflate occupied cells on the likelihood field map
+
+## Notes
+
+### likelihood field
+
+This implemenation uses a likelihood field model. Occupied cells on the map are inflated so that each collision detection between a laser beam and an occupied cell is relaxed. The likelihood for each cell is given with a pyramidal kernel function. The parameter `~laser_likelihood_max_dist` gives the length from the center cell to the edge of the pyramid.
