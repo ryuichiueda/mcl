@@ -47,6 +47,7 @@ private:
 	void resampling(void);
 	bool normalize(void);
 	void resetWeight(void);
+	void copyScanSafely(vector<double> &ranges, double &angle_min, double &angle_increment);
 
 	shared_ptr<OdomModel> odom_model_;
 	shared_ptr<LikelihoodFieldMap> map_;

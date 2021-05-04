@@ -74,16 +74,12 @@ void ParticleFilter::sensorUpdate(void)
 		return;
 
 	vector<double> ranges;
-	int seq = -1;
-	/* copy scan ranges safely */
-	while(seq != scan_.seq_){
-		ranges.clear();
-		seq = scan_.seq_;
-		copy(scan_.ranges_.begin(), scan_.ranges_.end(), back_inserter(ranges) );
-	}
+	double angle_min;
+	double angle_increment;
+	copyScanSafely(ranges, angle_min, angle_increment);
 
 	for(auto &p : particles_)
-		p.w_ *= p.likelihood(map_.get(), scan_);
+		p.w_ *= p.likelihood(map_.get(), ranges, angle_min, angle_increment);
 
 	if(normalize())
 		resampling();
@@ -91,6 +87,18 @@ void ParticleFilter::sensorUpdate(void)
 		resetWeight();
 
 	scan_.processed_seq_ = scan_.seq_;
+}
+
+void ParticleFilter::copyScanSafely(vector<double> &ranges, double &angle_min, double &angle_increment)
+{
+	int seq = -1;
+	while(seq != scan_.seq_){
+		ranges.clear();
+		seq = scan_.seq_;
+		copy(scan_.ranges_.begin(), scan_.ranges_.end(), back_inserter(ranges) );
+		angle_min = scan_.angle_min_;
+		angle_increment = scan_.angle_increment_;
+	}
 }
 
 void ParticleFilter::motionUpdate(double x, double y, double t)
