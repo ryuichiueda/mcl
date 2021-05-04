@@ -62,10 +62,10 @@ void MclNode::initPF(void)
 shared_ptr<OdomModel> MclNode::initOdometry(void)
 {
 	double ff, fr, rf, rr;
-	private_nh_.param("odom_fw_dev_per_fw", ff, 0.0);
-	private_nh_.param("odom_fw_dev_per_rot", fr, 0.0);
-	private_nh_.param("odom_rot_dev_per_fw", rf, 0.0);
-	private_nh_.param("odom_rot_dev_per_rot", rr, 0.0);
+	private_nh_.param("odom_fw_dev_per_fw", ff, 0.19);
+	private_nh_.param("odom_fw_dev_per_rot", fr, 0.0001);
+	private_nh_.param("odom_rot_dev_per_fw", rf, 0.13);
+	private_nh_.param("odom_rot_dev_per_rot", rr, 0.2);
 	return shared_ptr<OdomModel>(new OdomModel(ff, fr, rf, rr));
 }
 
