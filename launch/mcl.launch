@@ -8,7 +8,9 @@
   <!-- AMCL -->
   <node pkg="mcl" type="mcl_node" name="mcl_node" output="screen">
 
-    <param name="num_particles"             value="1000"/>
+    <param name="odom_freq"                 value="20"/>
+    <param name="num_particles"             value="500"/>
+
     <param name="odom_frame_id"             value="odom"/>
     <param name="base_frame_id"             value="base_footprint"/>
 

@@ -34,6 +34,8 @@ This node transforms laser scans and odometry transform messages to pose estimat
 
 #### Parameters
 
+* ~odom_freq (int, default: 20 [Hz])
+    * frequency of odometry update
 * ~num_particles (int, default: 1000)
     * number of particles
 * ~odom_frame_id (string, default: "odom")

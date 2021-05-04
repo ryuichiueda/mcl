@@ -19,6 +19,8 @@ MclNode::MclNode() : private_nh_("~")
 	initTF();
 	initPF();
 	initTopic();
+
+	private_nh_.param("odom_freq", odom_freq_, 20);
 }
 
 MclNode::~MclNode()
@@ -211,13 +213,17 @@ bool MclNode::getOdomPose(double& x, double& y, double& yaw)
 	return true;
 }
 
+int MclNode::getOdomFreq(void){
+	return odom_freq_;
+}
+
 int main(int argc, char **argv)
 {
 
 	ros::init(argc, argv, "mcl_node");
 	MclNode node;
 
-	ros::Rate loop_rate(10);
+	ros::Rate loop_rate(node.getOdomFreq());
 	while (ros::ok()){
 		node.loop();
 		ros::spinOnce();

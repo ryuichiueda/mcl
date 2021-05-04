@@ -27,6 +27,7 @@ public:
 	~MclNode();
 
 	void loop(void);
+	int getOdomFreq(void);
 private:
 	std::shared_ptr<ParticleFilter> pf_;
 	ros::NodeHandle nh_;
@@ -45,6 +46,8 @@ private:
 	std::shared_ptr<tf2_ros::Buffer> tf_;
 
 	tf2::Transform latest_tf_;
+
+	int odom_freq_;
 
 	void publishPose(double x, double y, double t,
 			double x_dev, double y_dev, double t_dev,
