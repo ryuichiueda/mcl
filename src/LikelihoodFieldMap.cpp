@@ -8,7 +8,7 @@
 
 #include "mcl/LikelihoodFieldMap.h"
 
-LikelihoodFieldMap::LikelihoodFieldMap(const nav_msgs::OccupancyGrid &map)
+LikelihoodFieldMap::LikelihoodFieldMap(const nav_msgs::OccupancyGrid &map, double likelihood_range)
 {
 	width_ = map.info.width;
 	height_ = map.info.height;
@@ -28,7 +28,7 @@ LikelihoodFieldMap::LikelihoodFieldMap(const nav_msgs::OccupancyGrid &map)
 	for(int x=0; x<width_; x++)
 		for(int y=0; y<height_; y++)
 			if(map.data[x + y*width_] > 50)
-				setLikelihood(x, y);
+				setLikelihood(x, y, likelihood_range);
 }
 
 LikelihoodFieldMap::~LikelihoodFieldMap()
@@ -43,38 +43,20 @@ double LikelihoodFieldMap::likelihood(double x, double y)
 	int ix = (int)floor((x - origin_x_)/resolution_);
 	int iy = (int)floor((y - origin_y_)/resolution_);
 
-	if(ix < 0 or iy < 0)
-		return 0.0;
-	if(ix >= width_ or iy >= height_)
+	if(ix < 0 or iy < 0 or ix >= width_ or iy >= height_)
 		return 0.0;
 
 	return likelihoods_[ix][iy];
 }
 
-void LikelihoodFieldMap::setLikelihood(int x, int y){
-	for(int i=-2+x;i<=2+x;i++){
-		if(i < 0 or i >= width_)
-			continue;
+void LikelihoodFieldMap::setLikelihood(int x, int y, double range)
+{
+	int cell_num = (int)ceil(range/resolution_);
+	std::vector<double> weights;
+	for(int i=0;i<=cell_num;i++)
+		weights.push_back(1.0 - (double)i/cell_num);
 
-		for(int j=-2+y;j<=2+y;j++){
-			if(j < 0 or j >= height_)
-				continue;
-
-			likelihoods_[i][j] += 0.25;
-		}
-	}
-
-	for(int i=-1+x;i<=1+x;i++){
-		if(i < 0 or i >= width_)
-			continue;
-
-		for(int j=-1+y;j<=1+y;j++){
-			if(j < 0 or j >= height_)
-				continue;
-
-			likelihoods_[i][j] += 0.25;
-		}
-	}
-
-	likelihoods_[x][y] += 0.25;
+	for(int i=-cell_num; i<=cell_num; i++)
+		for(int j=-cell_num; j<=cell_num; j++)
+			likelihoods_[i+x][j+y] += std::min(weights[abs(i)], weights[abs(j)]);
 }

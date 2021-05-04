@@ -72,7 +72,7 @@ shared_ptr<OdomModel> MclNode::initOdometry(void)
 shared_ptr<LikelihoodFieldMap> MclNode::initMap(void)
 {
 	double likelihood_range;
-	private_nh_.param("laser_likelihood_max_dist", likelihood_range, 0.0);
+	private_nh_.param("laser_likelihood_max_dist", likelihood_range, 0.2);
 
 	int num;
 	private_nh_.param("num_particles", num, 0);
@@ -86,7 +86,7 @@ shared_ptr<LikelihoodFieldMap> MclNode::initMap(void)
 		d.sleep();
 	}
 
-	return shared_ptr<LikelihoodFieldMap>(new LikelihoodFieldMap(resp.map));
+	return shared_ptr<LikelihoodFieldMap>(new LikelihoodFieldMap(resp.map, likelihood_range));
 }
 
 void MclNode::cbScan(const sensor_msgs::LaserScan::ConstPtr &msg)

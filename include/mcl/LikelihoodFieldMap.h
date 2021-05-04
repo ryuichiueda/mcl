@@ -16,10 +16,10 @@
 class LikelihoodFieldMap
 {
 public: 
-	LikelihoodFieldMap(const nav_msgs::OccupancyGrid &map);
+	LikelihoodFieldMap(const nav_msgs::OccupancyGrid &map, double likelihood_range);
 	~LikelihoodFieldMap();
 
-	void setLikelihood(int x, int y);
+	void setLikelihood(int x, int y, double range);
 	double likelihood(double x, double y);
 
 	std::vector<double *> likelihoods_;
