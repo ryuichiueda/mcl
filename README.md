@@ -32,3 +32,29 @@ This node transforms laser scans and odometry transform messages to pose estimat
 
 * static_map ([nav_msgs/GetMap](http://docs.ros.org/en/api/nav_msgs/html/srv/GetMap.html))
     * mcl initializes the map for localization
+
+
+#### Parameters
+
+* num_particles (int, default: 1000)
+    * number of particles
+* ~odom_frame_id (string, default: "odom")
+    * the frame for odometry
+* ~base_frame_id (string, default: "base_footprint")
+    * the frame of the localized robot's base
+* ~global_frame_id (string, default: "map")
+    * the frame for localization 
+* ~initial_pose_x (double, default: 0.0 [m])
+    * initial x coordinate of particles
+* ~initial_pose_y (double, default: 0.0 [m])
+    * initial y coordinate of particles
+* ~initial_pose_a (double, default: 0.0 [rad])
+    * initial yaw coordinate of particles
+* ~odom_fw_dev_per_fw (double, default: 0.19 [m/m])
+    * standard deviation of forward motion noise by forward motion
+* ~odom_fw_dev_per_rot (double, default: 0.0001 [m/rad])
+    * standard deviation of forward motion noise by rotational motion
+* ~odom_rot_dev_per_fw (double, default: 0.13 [m/m])
+    * standard deviation of rotational motion noise by forward motion
+* ~odom_rot_dev_per_rot (double, default: 0.2 [m/rad])
+    * standard deviation of rotational motion noise by rotational motion
