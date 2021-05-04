@@ -19,6 +19,7 @@
 #include "tf2/LinearMath/Transform.h"
 
 #include "sensor_msgs/LaserScan.h"
+#include "geometry_msgs/PoseWithCovarianceStamped.h"
 
 class MclNode
 {
@@ -36,6 +37,7 @@ private:
 	ros::Publisher particlecloud_pub_;
 	ros::Publisher pose_pub_;
 	ros::Subscriber laser_scan_sub_;
+	ros::Subscriber initial_pose_sub_;
 
 	std::string base_frame_id_;
 	std::string global_frame_id_;
@@ -48,6 +50,8 @@ private:
 	tf2::Transform latest_tf_;
 
 	int odom_freq_;
+	bool init_request_;
+	double init_x_, init_y_, init_t_;
 
 	void publishPose(double x, double y, double t,
 			double x_dev, double y_dev, double t_dev,
@@ -64,6 +68,7 @@ private:
 	shared_ptr<OdomModel> initOdometry(void);
 
 	void cbScan(const sensor_msgs::LaserScan::ConstPtr &msg);
+	void initialPoseReceived(const geometry_msgs::PoseWithCovarianceStampedConstPtr& msg);
 };
 
 #endif

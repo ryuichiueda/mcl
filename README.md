@@ -16,6 +16,8 @@ This node transforms laser scans and odometry transform messages to pose estimat
     * laser scans
 * tf ([tf/tfMessage](http://docs.ros.org/en/api/tf/html/msg/tfMessage.html))
     * transforms
+* initialpose ([geometry_msgs/PoseWithCovarianceStamped](http://docs.ros.org/en/melodic/api/geometry_msgs/html/msg/PoseWithCovarianceStamped.html))
+    * pose of particles for replacement
 
 #### Published Topics
 

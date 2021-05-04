@@ -21,6 +21,8 @@ MclNode::MclNode() : private_nh_("~")
 	initTopic();
 
 	private_nh_.param("odom_freq", odom_freq_, 20);
+
+	init_request_ = false;
 }
 
 MclNode::~MclNode()
@@ -32,6 +34,8 @@ void MclNode::initTopic(void)
 	particlecloud_pub_ = nh_.advertise<geometry_msgs::PoseArray>("particlecloud", 2, true);
 	pose_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("mcl_pose", 2, true);
 	laser_scan_sub_ = nh_.subscribe("scan", 2, &MclNode::cbScan, this);
+	initial_pose_sub_ = nh_.subscribe("initialpose", 2, &MclNode::initialPoseReceived, this);
+
 }
 
 void MclNode::initTF(void)
@@ -96,8 +100,21 @@ void MclNode::cbScan(const sensor_msgs::LaserScan::ConstPtr &msg)
 	pf_->setScan(msg);
 }
 
+void MclNode::initialPoseReceived(const geometry_msgs::PoseWithCovarianceStampedConstPtr& msg)
+{
+	init_request_ = true;
+	init_x_ = msg->pose.pose.position.x;
+	init_y_ = msg->pose.pose.position.y;
+	init_t_ = msg->pose.pose.orientation.z;
+}
+
 void MclNode::loop(void)
 {
+	if(init_request_){
+		pf_->initialize(init_x_, init_y_, init_t_);
+		init_request_ = false;
+	}
+
 	double x, y, t;
 	if(not getOdomPose(x, y, t)){
 		ROS_INFO("can't get odometry info");

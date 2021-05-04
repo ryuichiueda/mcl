@@ -220,3 +220,13 @@ void ParticleFilter::resetWeight(void)
 	for(auto &p : particles_)
 		p.w_ = 1.0/particles_.size();
 }
+
+void ParticleFilter::initialize(double x, double y, double t)
+{
+	Pose new_pose(x, y, t);
+	for(auto &p : particles_)
+		p.p_ = new_pose;
+
+	resetWeight();
+}
+
